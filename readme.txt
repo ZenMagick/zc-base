@@ -15,3 +15,9 @@ http://www.zen-cart.com/forum/showthread.php?t=97461
 Patches not applied:
 ISSUE WITH GODADDY HOSTING CUSTOMERS VS PAYPAL
 http://www.zen-cart.com/forum/showpost.php?p=612520&postcount=25
+
+PHP5.3 changes:
+- rename date_diff to zen_date_diff
+- change error reporting, adding & ~E_DEPRECATED
+- set initial error reporting as first line in application_top.php
+- change some MySQL5 issues in the installer
