@@ -21,3 +21,5 @@ PHP5.3 changes:
 - change error reporting, adding & ~E_DEPRECATED
 - set initial error reporting as first line in application_top.php
 - change some MySQL5 issues in the installer
+
+- apply (most) of the official Zen Cart PHP5.3 patches
