@@ -38,8 +38,8 @@ if (isset($_GET['action']) && ($_GET['action'] == 'send')) {
     if (CONTACT_US_LIST !=''){
       $send_to_array=explode("," ,CONTACT_US_LIST);
       preg_match('/\<[^>]+\>/', $send_to_array[$_POST['send_to']], $send_email_array);
-      $send_to_email= eregi_replace (">", "", $send_email_array[0]);
-      $send_to_email= eregi_replace ("<", "", $send_to_email);
+      $send_to_email= str_replace (">", "", $send_email_array[0]);
+      $send_to_email= str_replace ("<", "", $send_to_email);
       $send_to_name = preg_replace('/\<[^*]*/', '', $send_to_array[$_POST['send_to']]);
     } else {  //otherwise default to EMAIL_FROM and store name
     $send_to_email = EMAIL_FROM;

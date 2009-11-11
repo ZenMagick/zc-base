@@ -57,7 +57,7 @@
 // BOF: UPS USPS
           if( is_array( $value ) ){
             $value = implode( ", ", $value);
-            $value = ereg_replace (", --none--", "", $value);
+            $value = str_replace (", --none--", "", $value);
           }
 // EOF: UPS USPS
           $db->Execute("update " . TABLE_CONFIGURATION . "
@@ -304,7 +304,7 @@
           $keys .= '<b>' . $value['title'] . '</b><br>';
           if ($value['use_function']) {
             $use_function = $value['use_function'];
-            if (ereg('->', $use_function)) {
+            if (preg_match('/->/', $use_function)) {
               $class_method = explode('->', $use_function);
               if (!is_object(${$class_method[0]})) {
                 include(DIR_WS_CLASSES . $class_method[0] . '.php');

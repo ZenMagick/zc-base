@@ -95,7 +95,7 @@ if (!defined('IS_ADMIN_FLAG')) {
 */
 
   function zen_sanitize_string($string) {
-    $string = ereg_replace(' +', ' ', $string);
+    $string = preg_replace('/ +/', ' ', $string);
     return preg_replace("/[<>]/", '_', $string);
   }
 
@@ -222,7 +222,7 @@ if (!defined('IS_ADMIN_FLAG')) {
     if ($year != 1969 && @date('Y', mktime($hour, $minute, $second, $month, $day, $year)) == $year) {
       return date(DATE_FORMAT, mktime($hour, $minute, $second, $month, $day, $year));
     } else {
-      return ereg_replace('2037' . '$', $year, date(DATE_FORMAT, mktime($hour, $minute, $second, $month, $day, 2037)));
+      return preg_replace('/2037$/', $year, date(DATE_FORMAT, mktime($hour, $minute, $second, $month, $day, 2037)));
     }
   }
 
@@ -273,7 +273,7 @@ if (!defined('IS_ADMIN_FLAG')) {
 */
 
 // Add this word to the $tmpstring, starting the $tmpstring
-        $tmpstring = trim(ereg_replace('"', ' ', $pieces[$k]));
+        $tmpstring = trim(str_replace('"', ' ', $pieces[$k]));
 
 // Check for one possible exception to the rule. That there is a single quoted word.
         if (substr($pieces[$k], -1 ) == '"') {
@@ -323,7 +323,7 @@ if (!defined('IS_ADMIN_FLAG')) {
    $piece onto the tail of the string, push the $tmpstring onto the $haves,
    kill the $tmpstring, turn the $flag "off", and return.
 */
-            $tmpstring .= ' ' . trim(ereg_replace('"', ' ', $pieces[$k]));
+            $tmpstring .= ' ' . trim(str_replace('"', ' ', $pieces[$k]));
 
 // Push the $tmpstring onto the array of stuff to search for
             $objects[] = trim($tmpstring);
@@ -618,11 +618,11 @@ if (!defined('IS_ADMIN_FLAG')) {
         $char = chr(zen_rand(0,255));
       }
       if ($type == 'mixed') {
-        if (eregi('^[a-z0-9]$', $char)) $rand_value .= $char;
+        if (preg_match('/^[a-z0-9]$/i', $char)) $rand_value .= $char;
       } elseif ($type == 'chars') {
-        if (eregi('^[a-z]$', $char)) $rand_value .= $char;
+        if (preg_match('/^[a-z]$/i', $char)) $rand_value .= $char;
       } elseif ($type == 'digits') {
-        if (ereg('^[0-9]$', $char)) $rand_value .= $char;
+        if (preg_match('/^[0-9]$/i', $char)) $rand_value .= $char;
       }
     }
 
@@ -780,7 +780,7 @@ if (!defined('IS_ADMIN_FLAG')) {
 // nl2br() prior PHP 4.2.0 did not convert linefeeds on all OSs (it only converted \n)
   function zen_convert_linefeeds($from, $to, $string) {
     if ((PHP_VERSION < "4.0.5") && is_array($from)) {
-      return ereg_replace('(' . implode('|', $from) . ')', $to, $string);
+      return preg_replace('/(' . implode('|', $from) . ')/', $to, $string);
     } else {
       return str_replace($from, $to, $string);
     }
@@ -801,7 +801,7 @@ if (!defined('IS_ADMIN_FLAG')) {
 
     $product = $db->Execute($product_query);
 
-    if (ereg('^GIFT', $product->fields['products_model'])) {
+    if (preg_match('/^GIFT/', $product->fields['products_model'])) {
       return false;
     }
 

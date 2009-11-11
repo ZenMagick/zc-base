@@ -55,14 +55,14 @@
 
     // check for injection attempts. If new-line characters found in header fields, simply fail to send the message
     foreach(array($from_email_address, $to_address, $from_email_name, $to_name, $email_subject) as $key=>$value) {
-      if (eregi("\r",$value) || eregi("\n",$value)) return false;
+      if (preg_match("/\r/",$value) || preg_match("/\n/",$value)) return false;
     }
 
     // if no text or html-msg supplied, exit
     if (trim($email_text) == '' && (!zen_not_null($block) || (isset($block['EMAIL_MESSAGE_HTML']) && $block['EMAIL_MESSAGE_HTML'] == '')) ) return false;
 
     // Parse "from" addresses for "name" <email@address.com> structure, and supply name/address info from it.
-    if (eregi(" *([^<]*) *<([^>]*)> *",$from_email_address,$regs)) {
+    if (preg_match("/ *([^<]*) *<([^>]*)> */i",$from_email_address,$regs)) {
       $from_email_name = trim($regs[1]);
       $from_email_address = $regs[2];
     }
@@ -71,10 +71,10 @@
 
     // loop thru multiple email recipients if more than one listed  --- (esp for the admin's "Extra" emails)...
     foreach(explode(',',$to_address) as $key=>$value) {
-      if (eregi(" *([^<]*) *<([^>]*)> *",$value,$regs)) {
+      if (preg_match("/ *([^<]*) *<([^>]*)> */i",$value,$regs)) {
         $to_name = str_replace('"', '', trim($regs[1]));
         $to_email_address = $regs[2];
-      } elseif (eregi(" *([^ ]*) *",$value,$regs)) {
+      } elseif (preg_match("/ *([^ ]*) */i",$value,$regs)) {
         $to_email_address = trim($regs[1]);
       }
       if (!isset($to_email_address)) $to_email_address=$to_address; //if not more than one, just use the main one.
@@ -544,17 +544,17 @@
     // split the email address into user and domain parts
     // this method will most likely break in that case
     list( $user, $domain ) = explode( "@", $email );
-    $valid_ip_form = '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}';
-    $valid_email_pattern = '^[a-z0-9]+[a-z0-9_\.\'\-]*@[a-z0-9]+[a-z0-9\.\-]*\.(([a-z]{2,6})|([0-9]{1,3}))$';
+    $valid_ip_form = '/[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/';
+    $valid_email_pattern = '/^[a-z0-9]+[a-z0-9_\.\'\-]*@[a-z0-9]+[a-z0-9\.\-]*\.(([a-z]{2,6})|([0-9]{1,3}))$/';
     //preg_match('/^([a-zA-Z0-9])+([a-zA-Z0-9\._-])*@([a-zA-Z0-9_-])+(\.[a-zA-Z0-9\._-]+)+$/', $email))
     //preg_match('/^[a-z0-9&\'\.\-_\+]+@[a-z0-9\-]+\.([a-z0-9\-]+\.)*?[a-z]+$/is');
-    $space_check = '[ ]';
+    $space_check = '/[ ]/';
 
     // strip beginning and ending quotes, if and only if both present
-    if( (ereg('^["]', $user) && ereg('["]$', $user)) ){
-      $user = ereg_replace ( '^["]', '', $user );
-      $user = ereg_replace ( '["]$', '', $user );
-      $user = ereg_replace ( $space_check, '', $user ); //spaces in quoted addresses OK per RFC (?)
+    if( (preg_match('/^["]/', $user) && preg_match('/["]$/', $user)) ){
+      $user = preg_replace ( '/^["]/', '', $user );
+      $user = preg_replace ( '/["]$/', '', $user );
+      $user = preg_replace ( $space_check, '', $user ); //spaces in quoted addresses OK per RFC (?)
       $email = $user."@".$domain; // contine with stripped quotes for remainder
     }
 
@@ -562,7 +562,7 @@
     if (strstr($domain,' ')) return false;
 
     // if email domain part is an IP address, check each part for a value under 256
-    if (ereg($valid_ip_form, $domain)) {
+    if (preg_match($valid_ip_form, $domain)) {
       $digit = explode( ".", $domain );
       for($i=0; $i<4; $i++) {
         if ($digit[$i] > 255) {
@@ -579,8 +579,8 @@
       }
     }
 
-    if (!ereg($space_check, $email)) { // trap for spaces in
-      if ( eregi($valid_email_pattern, $email)) { // validate against valid email patterns
+    if (!preg_match($space_check, $email)) { // trap for spaces in
+      if ( preg_match($valid_email_pattern.'i', $email)) { // validate against valid email patterns
         $valid_address = true;
       } else {
         $valid_address = false;

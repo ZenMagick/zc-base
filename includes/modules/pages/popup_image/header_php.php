@@ -38,7 +38,7 @@
   }
 
   $products_image_extension = substr($products_image, strrpos($products_image, '.'));
-  $products_image_base = ereg_replace($products_image_extension, '', $products_image);
+  $products_image_base = preg_replace('/'.$products_image_extension.'/', '', $products_image);
   $products_image_medium = $products_image_base . IMAGE_SUFFIX_MEDIUM . $products_image_extension;
   $products_image_large = $products_image_base . IMAGE_SUFFIX_LARGE . $products_image_extension;
 

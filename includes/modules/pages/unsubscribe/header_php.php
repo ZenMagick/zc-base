@@ -16,7 +16,7 @@ require(DIR_WS_MODULES . zen_get_module_directory('require_languages.php'));
 
 //present the option to unsubscribe, with a confirm button/link
 if (isset($_GET['addr'])) {
-  $unsubscribe_address = ereg_replace('[^0-9A-Za-z@._-]', '', $_GET['addr']);
+  $unsubscribe_address = preg_replace('/[^0-9A-Za-z@._-]/', '', $_GET['addr']);
   if ($unsubscribe_address=='')  zen_redirect(zen_href_link(FILENAME_ACCOUNT_NEWSLETTERS));
 } else {
   $unsubscribe_address = '';

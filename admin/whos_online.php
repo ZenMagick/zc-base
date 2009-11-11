@@ -329,7 +329,7 @@ function zen_check_minutes($the_time_last_click) {
                     echo TEXT_SESSION_ID . $whos_online->fields['session_id'] . '<br />' .
                     TEXT_HOST . $whos_online->fields['host_address'] . '<br />' .
                     TEXT_USER_AGENT . $whos_online->fields['user_agent'] . '<br />';
-                    if (eregi('^(.*)' . zen_session_name() . '=[a-f,0-9]+[&]*(.*)', $whos_online->fields['last_page_url'], $array)) {
+                    if (preg_match('/^(.*)' . zen_session_name() . '=[a-f,0-9]+[&]*(.*)/i', $whos_online->fields['last_page_url'], $array)) {
                       echo $array[1] . $array[2];
                     } else {
                       echo "<a href='" . $whos_online->fields['last_page_url'] . "' target=new>" . '<u>' . $whos_online->fields['last_page_url'] . '</u>' . "</a>";

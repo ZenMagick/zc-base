@@ -136,7 +136,7 @@ class queryFactory extends base {
           $zp_result_array = @mysql_fetch_array($zp_db_resource);
           if ($zp_result_array) {
             while (list($key, $value) = each($zp_result_array)) {
-              if (!ereg('^[0-9]', $key)) {
+              if (!preg_match('/^[0-9]/', $key)) {
                 $obj->result[$zp_ii][$key] = $value;
               }
             }
@@ -147,7 +147,7 @@ class queryFactory extends base {
           $zp_ii++;
 	}
         while (list($key, $value) = each($obj->result[$obj->cursor])) {
-          if (!ereg('^[0-9]', $key)) {
+          if (!preg_match('/^[0-9]/', $key)) {
             $obj->fields[$key] = $value;
 	  }
         }
@@ -174,7 +174,7 @@ class queryFactory extends base {
         $zp_result_array = @mysql_fetch_array($zp_db_resource);
         if ($zp_result_array) {
           while (list($key, $value) = each($zp_result_array)) {
-            if (!ereg('^[0-9]', $key)) {
+            if (!preg_match('/^[0-9]/', $key)) {
               $obj->fields[$key] = $value;
             }
           }
@@ -234,7 +234,7 @@ class queryFactory extends base {
         $zp_ptr = $obj->result_random;
       }
       while (list($key, $value) = each($obj->result[$zp_ptr])) {
-        if (!ereg('^[0-9]', $key)) {
+        if (!preg_match('/^[0-9]/', $key)) {
           $obj->fields[$key] = $value;
 	}
       }
@@ -409,7 +409,7 @@ class queryFactoryResult {
         $this->EOF = true;
       } else {
         while (list($key, $value) = each($zp_result_array)) {
-          if (!ereg('^[0-9]', $key)) {
+          if (!preg_match('/^[0-9]/', $key)) {
             $this->fields[$key] = $value;
           }
         }
@@ -422,7 +422,7 @@ class queryFactoryResult {
     if ($this->cursor < $this->Limit) {
       $zp_result_array = $this->result[$this->result_random[$this->cursor]];
       while (list($key, $value) = each($zp_result_array)) {
-        if (!ereg('^[0-9]', $key)) {
+        if (!preg_match('/^[0-9]/', $key)) {
           $this->fields[$key] = $value;
 	}
       }

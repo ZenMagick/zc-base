@@ -100,7 +100,7 @@ if (!defined('IS_ADMIN_FLAG')) {
   $listing_sql = str_replace('m.manufacturers_name', 'm.record_company_name as manufacturers_name', $listing_sql);
 
   if (isset($column_list)) {
-    if ( (!isset($_GET['sort'])) || (!ereg('[1-8][ad]', $_GET['sort'])) || (substr($_GET['sort'], 0, 1) > sizeof($column_list)) )
+    if ( (!isset($_GET['sort'])) || (!preg_match('/[1-8][ad]/', $_GET['sort'])) || (substr($_GET['sort'], 0, 1) > sizeof($column_list)) )
     {
       for ($i=0, $n=sizeof($column_list); $i<$n; $i++)
       {

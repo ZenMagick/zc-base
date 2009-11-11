@@ -415,7 +415,7 @@
       //if the https:// entries were left blank, use non-SSL versions instead of blank
       if ($https_server=='' || $https_server=='https://' || $https_server=='://') $https_server=$http_server;
       if ($https_catalog=='') $https_catalog=$http_catalog;
-      $https_catalog_path = ereg_replace($https_server,'',$https_catalog) . '/';
+      $https_catalog_path = str_replace($https_server,'',$https_catalog) . '/';
       $https_catalog = $https_catalog_path;
 
       //now let's write the files

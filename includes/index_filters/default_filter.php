@@ -89,7 +89,7 @@ if (!defined('IS_ADMIN_FLAG')) {
   }
 
   if (isset($column_list)) {
-    if ((!isset($_GET['sort'])) || (isset($_GET['sort']) && !ereg('[1-8][ad]', $_GET['sort'])) || (substr($_GET['sort'], 0, 1) > sizeof($column_list)) ) {
+    if ((!isset($_GET['sort'])) || (isset($_GET['sort']) && !preg_match('/[1-8][ad]/', $_GET['sort'])) || (substr($_GET['sort'], 0, 1) > sizeof($column_list)) ) {
       for ($i=0, $n=sizeof($column_list); $i<$n; $i++) {
         if (isset($column_list[$i]) && $column_list[$i] == 'PRODUCT_LIST_NAME') {
           $_GET['sort'] = $i+1 . 'a';

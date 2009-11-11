@@ -145,10 +145,10 @@
  * - ensure that "VERIFIED" has been returned (otherwise somebody is trying to spoof)
  */
   function ipn_validate_transaction($info, $postArray, $mode='IPN') {
-    if ($mode == 'IPN' && !eregi("VERIFIED",$info)) {
+    if ($mode == 'IPN' && false===stripos($info,"VERIFIED")) {
       ipn_debug_email('IPN WARNING :: Transaction was not marked as VERIFIED. Keep this report for potential use in fraud investigations.' . "\n" . 'IPN Info = ' . "\n" . $info);
       return false;
-    } elseif ($mode == 'PDT' && (!eregi("SUCCESS", $info) || eregi("FAIL", $info))) {
+    } elseif ($mode == 'PDT' && (false===stripos($info,"SUCCESS") || false!==stripos($info, "FAIL"))) {
       ipn_debug_email('IPN WARNING :: PDT Transaction was not marked as SUCCESS. Keep this report for potential use in fraud investigations.' . "\n" . 'IPN Info = ' . "\n" . $info);
       return false;
     }

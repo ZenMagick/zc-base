@@ -410,13 +410,13 @@ if (!defined('IS_ADMIN_FLAG')) {
             if ($_POST['id']) {
                 reset($_POST['id']);
                 while(list($key,$value) = each($_POST['id'])) {
-//echo ereg_replace('txt_', '', $key) . '#';
+//echo str_replace('txt_', '', $key) . '#';
 //print_r($_POST['id']);
 //echo $products_options_names->fields['products_options_id'].'|';
 //echo $value.'|';
 //echo $products_options->fields['products_options_values_id'].'#';
-                  if ((ereg_replace('txt_', '', $key) == $products_options_names->fields['products_options_id'])) {
-//                  if ((ereg_replace('txt_', '', $key) == $products_options_names->fields['products_options_id'] and $value == $products_options->fields['products_options_values_id'])) {
+                  if ((str_replace('txt_', '', $key) == $products_options_names->fields['products_options_id'])) {
+//                  if ((str_replace('txt_', '', $key) == $products_options_names->fields['products_options_id'] and $value == $products_options->fields['products_options_values_id'])) {
                     $tmp_html = '<input type="text" name ="id[' . TEXT_PREFIX . $products_options_names->fields['products_options_id'] . ']" size="' . $products_options_names->fields['products_options_size'] .'" maxlength="' . $products_options_names->fields['products_options_length'] . '" value="' . stripslashes($value) .'" />  ';
                     $tmp_html .= $products_options_details;
                     break;

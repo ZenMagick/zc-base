@@ -82,7 +82,7 @@ if ($_GET['action'] == 'send') {
   $_POST['amount'] = str_replace('$', '', $_POST['amount']);
 
   $gv_amount = trim($_POST['amount']);
-  if (ereg('[^0-9/.]', $gv_amount)) {
+  if (preg_match('/[^0-9/.]/', $gv_amount)) {
     $error = true;
     $messageStack->add('gv_send', ERROR_ENTRY_AMOUNT_CHECK, 'error');
   }

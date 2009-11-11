@@ -109,7 +109,7 @@ if (!defined('IS_ADMIN_FLAG')) {
     if (!isset($_SESSION['securityToken'])) {
       $_SESSION['securityToken'] = md5(uniqid(rand(), true));
     }
-  	if (ereg_replace('[a-zA-Z0-9]', '', session_id()) != '') session_regenerate_id();
+  	if (preg_replace('/[a-zA-Z0-9]/', '', session_id()) != '') session_regenerate_id();
   	if(!version_compare(phpversion(),"4.3.3",">=")){
      setcookie(
         session_name(),

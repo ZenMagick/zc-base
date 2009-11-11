@@ -43,9 +43,9 @@ class template_func extends base {
     //	echo 'template_default/' . $template_dir . '=' . $template_code;
     if ($this->file_exists($current_template . $current_page, $template_code)) {
       return $current_template . $current_page . '/';
-    } elseif ($this->file_exists(DIR_WS_TEMPLATES . 'template_default/' . $current_page, ereg_replace('/', '', $template_code), $debug)) {
+    } elseif ($this->file_exists(DIR_WS_TEMPLATES . 'template_default/' . $current_page, str_replace('/', '', $template_code), $debug)) {
       return DIR_WS_TEMPLATES . 'template_default/' . $current_page;
-    } elseif ($this->file_exists($current_template . $template_dir, ereg_replace('/', '', $template_code), $debug)) {
+    } elseif ($this->file_exists($current_template . $template_dir, str_replace('/', '', $template_code), $debug)) {
       return $current_template . $template_dir;
     } else {
       return DIR_WS_TEMPLATES . 'template_default/' . $template_dir;

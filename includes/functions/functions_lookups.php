@@ -442,8 +442,8 @@
     }
 
 // text required validation
-    if (ereg('^txt_', $option)) {
-      $check_attributes = $db->Execute("select attributes_display_only, attributes_required from " . TABLE_PRODUCTS_ATTRIBUTES . " where products_id='" . (int)$product_id . "' and options_id='" . (int)ereg_replace('txt_', '', $option) . "' and options_values_id='0'");
+    if (preg_match('/^txt_/', $option)) {
+      $check_attributes = $db->Execute("select attributes_display_only, attributes_required from " . TABLE_PRODUCTS_ATTRIBUTES . " where products_id='" . (int)$product_id . "' and options_id='" . (int)str_replace('txt_', '', $option) . "' and options_values_id='0'");
 // text cannot be blank
       if ($check_attributes->fields['attributes_required'] == '1' and empty($value)) {
         $check_valid = false;

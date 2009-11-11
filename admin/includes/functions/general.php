@@ -54,7 +54,7 @@
 
 
   function zen_sanitize_string($string) {
-    $string = ereg_replace(' +', ' ', $string);
+    $string = preg_replace('/ +/', ' ', $string);
 
     return preg_replace("/[<>]/", '_', $string);
   }
@@ -162,7 +162,7 @@
     if ($year != 1969 && @date('Y', mktime($hour, $minute, $second, $month, $day, $year)) == $year) {
       return date(DATE_FORMAT, mktime($hour, $minute, $second, $month, $day, $year));
     } else {
-      return ereg_replace('2037' . '$', $year, date(DATE_FORMAT, mktime($hour, $minute, $second, $month, $day, 2037)));
+      return preg_replace('/2037$/', $year, date(DATE_FORMAT, mktime($hour, $minute, $second, $month, $day, 2037)));
     }
 
   }
@@ -1213,7 +1213,7 @@
     if ($duplicate_image->fields['total'] < 2 and $product_image->fields['products_image'] != '') {
       $products_image = $product_image->fields['products_image'];
       $products_image_extension = substr($products_image, strrpos($products_image, '.'));
-			$products_image_base = ereg_replace($products_image_extension, '', $products_image);
+			$products_image_base = preg_replace('/'.$products_image_extension.'/', '', $products_image);
 
       $filename_medium = 'medium/' . $products_image_base . IMAGE_SUFFIX_MEDIUM . $products_image_extension;
 			$filename_large = 'large/' . $products_image_base . IMAGE_SUFFIX_LARGE . $products_image_extension;
@@ -1641,7 +1641,7 @@
 // nl2br() prior PHP 4.2.0 did not convert linefeeds on all OSs (it only converted \n)
   function zen_convert_linefeeds($from, $to, $string) {
     if ((PHP_VERSION < "4.0.5") && is_array($from)) {
-      return ereg_replace('(' . implode('|', $from) . ')', $to, $string);
+      return preg_replace('/(' . implode('|', $from) . ')/', $to, $string);
     } else {
       return str_replace($from, $to, $string);
     }

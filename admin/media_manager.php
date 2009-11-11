@@ -48,7 +48,7 @@
           if ($clip_name) {
             $media_type = $_POST['media_type'];
             $ext = $db->Execute("select type_ext from " . TABLE_MEDIA_TYPES . " where type_id = '" . $_POST['media_type'] . "'");
-            if (ereg($ext->fields['type_ext'], $clip_name)) {
+            if (preg_match('~'.$ext->fields['type_ext'].'~', $clip_name)) {
 
               if ($media_upload = new upload('clip_filename')) {
                 $media_upload->set_destination(DIR_FS_CATALOG_MEDIA . $_POST['media_dir']);

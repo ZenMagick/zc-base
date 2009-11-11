@@ -128,7 +128,7 @@ hr {display: none; font-size: 11px;}
 
     $phpinfo = str_replace('border: 1px', '', $phpinfo);
     $phpinfo = str_replace('width="600"', 'width="700"', $phpinfo);
-    ereg('<body>(.*)</body>', $phpinfo, $regs);
+    preg_match('~<body>(.*)</body>~', $phpinfo, $regs);
     echo $sinfo;
     echo $regs[1];
   } else {

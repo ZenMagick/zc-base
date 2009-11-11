@@ -14,32 +14,32 @@
   if (!defined('IS_ADMIN_FLAG')) {
     die('Illegal Access');
   }
-  if (isset($_GET['products_id'])) $_GET['products_id'] = ereg_replace('[^0-9a-f:]', '', $_GET['products_id']);
-  if (isset($_GET['manufacturers_id'])) $_GET['manufacturers_id'] = ereg_replace('[^0-9]', '', $_GET['manufacturers_id']);
-  if (isset($_GET['cPath'])) $_GET['cPath'] = ereg_replace('[^0-9_]', '', $_GET['cPath']);
-  if (isset($_GET['main_page'])) $_GET['main_page'] = ereg_replace('[^0-9a-zA-Z_]', '', $_GET['main_page']);
-  if (isset($_GET['sort'])) $_GET['sort'] = ereg_replace('[^0-9a-zA-Z]', '', $_GET['sort']);
+  if (isset($_GET['products_id'])) $_GET['products_id'] = preg_replace('/[^0-9a-f:]/', '', $_GET['products_id']);
+  if (isset($_GET['manufacturers_id'])) $_GET['manufacturers_id'] = preg_replace('/[^0-9]/', '', $_GET['manufacturers_id']);
+  if (isset($_GET['cPath'])) $_GET['cPath'] = preg_replace('/[^0-9_]/', '', $_GET['cPath']);
+  if (isset($_GET['main_page'])) $_GET['main_page'] = preg_replace('/[^0-9a-zA-Z_]/', '', $_GET['main_page']);
+  if (isset($_GET['sort'])) $_GET['sort'] = preg_replace('/[^0-9a-zA-Z]/', '', $_GET['sort']);
 /**
  * process all $_GET terms
  */
-  $strictReplace = '[<>\']';
-  $unStrictReplace = '[<>]';
+  $strictReplace = '/[<>\']/';
+  $unStrictReplace = '/[<>]/';
   if (isset($_GET) && count($_GET) > 0) {
     foreach($_GET as $key=>$value){
       if(is_array($value)){
         foreach($value as $key2 => $val2){
           if ($key2 == 'keyword') {
-            $_GET[$key][$key2] = ereg_replace($unStrictReplace, '', $val2);
+            $_GET[$key][$key2] = preg_replace($unStrictReplace, '', $val2);
           } else {
-            $_GET[$key][$key2] = ereg_replace($strictReplace, '', $val2);            
+            $_GET[$key][$key2] = preg_replace($strictReplace, '', $val2);            
           }
           unset($GLOBALS[$key]);
         }
       } else {
         if ($key == 'keyword') {
-          $_GET[$key] = ereg_replace($unStrictReplace, '', $value);
+          $_GET[$key] = preg_replace($unStrictReplace, '', $value);
         } else {
-          $_GET[$key] = ereg_replace($strictReplace, '', $value);          
+          $_GET[$key] = preg_replace($strictReplace, '', $value);          
         }
         unset($GLOBALS[$key]);
       }

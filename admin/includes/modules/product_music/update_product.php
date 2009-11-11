@@ -199,7 +199,7 @@
 
       $products_image = zen_get_products_image((int)$products_id);
       $products_image_extension = substr($products_image, strrpos($products_image, '.'));
-      $products_image_base = ereg_replace($products_image_extension, '', $products_image);
+      $products_image_base = preg_replace('/'.$products_image_extension.'/', '', $products_image);
 
       $filename_medium = DIR_FS_CATALOG . DIR_WS_IMAGES . 'medium/' . $products_image_base . IMAGE_SUFFIX_MEDIUM . '.' . $fname[2];
       $filename_large = DIR_FS_CATALOG . DIR_WS_IMAGES . 'large/' . $products_image_base . IMAGE_SUFFIX_LARGE . '.' . $fname[2];

@@ -392,12 +392,12 @@ $sql = "select count(*) as total
                     if ($_POST['id']) {
                       reset($_POST['id']);
                       foreach ($_POST['id'] as $key => $value) {
-                        //echo ereg_replace('txt_', '', $key) . '#';
+                        //echo str_replace('txt_', '', $key) . '#';
                         //print_r($_POST['id']);
                         //echo $products_options_names->fields['products_options_id'].'|';
                         //echo $value.'|';
                         //echo $products_options->fields['products_options_values_id'].'#';
-                        if ((ereg_replace('txt_', '', $key) == $products_options_names->fields['products_options_id'])) {
+                        if ((str_replace('txt_', '', $key) == $products_options_names->fields['products_options_id'])) {
                           // use text area or input box based on setting of products_options_rows in the products_options table
                           if ( $products_options_names->fields['products_options_rows'] > 1) {
                             $tmp_html = '  <input disabled="disabled" type="text" name="remaining' . TEXT_PREFIX . $products_options_names->fields['products_options_id'] . '" size="3" maxlength="3" value="' . $products_options_names->fields['products_options_length'] . '" /> ' . TEXT_MAXIMUM_CHARACTERS_ALLOWED . '<br />';

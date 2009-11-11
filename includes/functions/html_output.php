@@ -91,7 +91,7 @@
 // clean up the link after processing
     while (strstr($link, '&amp;&amp;')) $link = str_replace('&amp;&amp;', '&amp;', $link);
 
-    $link = ereg_replace('&', '&amp;', $link);
+    $link = str_replace('&', '&amp;', $link);
     return $link;
   }
 

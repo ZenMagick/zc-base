@@ -110,7 +110,7 @@ class ot_gv {
 
     if ($_SESSION['cot_gv'] > 0) {
       // if cot_gv value contains any nonvalid characters, throw error
-      if (ereg('[^0-9/.]', trim($_SESSION['cot_gv']))) {
+      if (preg_match('/[^0-9/.]/', trim($_SESSION['cot_gv']))) {
         $messageStack->add_session('checkout_payment', TEXT_INVALID_REDEEM_AMOUNT, error);
         zen_redirect(zen_href_link(FILENAME_CHECKOUT_PAYMENT, '', 'SSL'));
       }
@@ -139,7 +139,7 @@ class ot_gv {
   function update_credit_account($i) {
     global $db, $order, $insert_id;
     // only act on newly-purchased gift certificates
-    if (ereg('^GIFT', addslashes($order->products[$i]['model']))) {
+    if (preg_match('/^GIFT/', addslashes($order->products[$i]['model']))) {
       // determine how much GV was purchased
       $gv_order_amount = ($order->products[$i]['final_price'] * $order->products[$i]['qty']);
       // if tax is to be calculated on purchased GVs, calculate it

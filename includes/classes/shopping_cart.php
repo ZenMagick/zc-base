@@ -652,7 +652,7 @@ $qty = $this->adjust_quantity($qty, $products_id, 'shopping_cart');
         }
 
         // shipping adjustments
-        if (($product->fields['product_is_always_free_shipping'] == 1) or ($product->fields['products_virtual'] == 1) or (ereg('^GIFT', addslashes($product->fields['products_model'])))) {
+        if (($product->fields['product_is_always_free_shipping'] == 1) or ($product->fields['products_virtual'] == 1) or (preg_match('/^GIFT/', addslashes($product->fields['products_model'])))) {
           $this->free_shipping_item += $qty;
           $this->free_shipping_price += zen_add_tax($products_price, $products_tax) * $qty;
           $this->free_shipping_weight += ($qty * $products_weight);
@@ -1250,7 +1250,7 @@ $qty = $this->adjust_quantity($qty, $products_id, 'shopping_cart');
       while (list($products_id, ) = each($this->contents)) {
         $free_ship_check = $db->Execute("select products_virtual, products_model, products_price, product_is_always_free_shipping from " . TABLE_PRODUCTS . " where products_id = '" . zen_get_prid($products_id) . "'");
         $virtual_check = false;
-        if (ereg('^GIFT', addslashes($free_ship_check->fields['products_model']))) {
+        if (preg_match('/^GIFT/', addslashes($free_ship_check->fields['products_model']))) {
           $gift_voucher += ($free_ship_check->fields['products_price'] + $this->attributes_price($products_id)) * $this->contents[$products_id]['qty'];
         }
         // product_is_always_free_shipping = 2 is special requires shipping
