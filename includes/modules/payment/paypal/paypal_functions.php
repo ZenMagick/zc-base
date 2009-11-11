@@ -3,11 +3,11 @@
  * functions used by payment module class for Paypal IPN payment method
  *
  * @package paymentMethod
- * @copyright Copyright 2003-2007 Zen Cart Development Team
+ * @copyright Copyright 2003-2009 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @copyright Portions Copyright 2004 DevosC.com
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: paypal_functions.php 7195 2007-10-06 14:29:44Z drbyte $
+ * @version $Id: paypal_functions.php 14753 2009-11-07 19:58:13Z drbyte $
  */
 
 // Functions for paypal processing
@@ -141,15 +141,15 @@
   }
 /**
  * IPN Validation
- * - match email addresses 
+ * - match email addresses
  * - ensure that "VERIFIED" has been returned (otherwise somebody is trying to spoof)
  */
   function ipn_validate_transaction($info, $postArray, $mode='IPN') {
-    if ($mode == 'IPN' && false===stripos($info,"VERIFIED")) {
-      ipn_debug_email('IPN WARNING :: Transaction was not marked as VERIFIED. Keep this report for potential use in fraud investigations.' . "\n" . 'IPN Info = ' . "\n" . $info);
+    if ($mode == 'IPN' && !preg_match("/VERIFIED/i", $info) && !preg_match("/SUCCESS/i", $info)) {
+      ipn_debug_email('IPN WARNING :: Transaction was NOT marked as VERIFIED. Keep this report for potential use in fraud investigations.' . "\n" . 'IPN Info: ' . "\n" . $info);
       return false;
-    } elseif ($mode == 'PDT' && (false===stripos($info,"SUCCESS") || false!==stripos($info, "FAIL"))) {
-      ipn_debug_email('IPN WARNING :: PDT Transaction was not marked as SUCCESS. Keep this report for potential use in fraud investigations.' . "\n" . 'IPN Info = ' . "\n" . $info);
+    } elseif ($mode == 'PDT' && (!preg_match("/SUCCESS/i", $info) || preg_match("/FAIL/i", $info))) {
+      ipn_debug_email('IPN WARNING :: PDT Transaction was NOT marked as SUCCESS. Keep this report for potential use in fraud investigations.' . "\n" . 'IPN Info: ' . "\n" . $info);
       return false;
     }
     $ppBusEmail = false;
@@ -282,12 +282,12 @@
                           'receiver_id' => $_POST['receiver_id'],
                           'txn_id' => $_POST['txn_id'],
                           'parent_txn_id' => $_POST['parent_txn_id'],
-                          'num_cart_items' => $_POST['num_cart_items'],
+                          'num_cart_items' => (int)$_POST['num_cart_items'],
                           'mc_gross' => $_POST['mc_gross'],
                           'mc_fee' => $_POST['mc_fee'],
-                          'settle_amount' => $_POST['settle_amount'],
+                          'settle_amount' => (isset($_POST['settle_amount']) && $_POST['settle_amount'] != '' ? $_POST['settle_amount'] : 0),
                           'settle_currency' => $_POST['settle_currency'],
-                          'exchange_rate' => $_POST['exchange_rate'],
+                          'exchange_rate' => (isset($_POST['exchange_rate']) && $_POST['exchange_rate'] != '' ? $_POST['exchange_rate'] : 1),
                           'notify_version' => $_POST['notify_version'],
                           'verify_sign' => $_POST['verify_sign'],
                           'date_added' => 'now()',
@@ -326,9 +326,9 @@
                           'verify_sign' => $_POST['verify_sign'],
                           'last_modified' => 'now()'
                          );
-    if (isset($_POST['payer_business_name']) && $_POST['payer_business_name'] != '') $sql_data_array = array_merge($sql_data_array, 
+    if (isset($_POST['payer_business_name']) && $_POST['payer_business_name'] != '') $sql_data_array = array_merge($sql_data_array,
                     array('payer_business_name' => $_POST['payer_business_name']));
-    if (isset($_POST['address_name']) && $_POST['address_name'] != '') $sql_data_array = array_merge($sql_data_array, 
+    if (isset($_POST['address_name']) && $_POST['address_name'] != '') $sql_data_array = array_merge($sql_data_array,
                     array('address_name' => $_POST['address_name'],
                           'address_street' => $_POST['addrss_street'],
                           'address_city' => $_POST['address_city'],
@@ -495,7 +495,7 @@
           // this is a header row
           $headerdone = true;
           $header_data .= $line;
-        } else if ($headerdone) { 
+        } else if ($headerdone) {
           // header has been read. now read the contents
           $info[] = $line;
         }
@@ -531,7 +531,7 @@
     zen_db_perform(TABLE_ORDERS_STATUS_HISTORY, $sql_data_array);
     ipn_debug_email('IPN NOTICE :: Update complete.');
 
-/** 
+/**
  * Activate any downloads associated with an order which has now been cleared
  */
     if ($txn_type=='echeck-cleared' || $txn_type == 'express-checkout-cleared' || substr($txn_type,0,8) == 'cleared-') {
@@ -568,7 +568,7 @@ error_reporting(E_ALL);
       global $$order_totals[$i]['code'];
       if (isset($$order_totals[$i]['code']->credit_class) && $$order_totals[$i]['code']->credit_class == true) $creditsApplied += round($order_totals[$i]['value'],2);
       // treat all other OT's as if they're related to handling fees
-      if (!in_array($order_totals[$i]['code'], array('ot_total','ot_subtotal','ot_tax','ot_shipping')) 
+      if (!in_array($order_totals[$i]['code'], array('ot_total','ot_subtotal','ot_tax','ot_shipping'))
           && !(isset($$order_totals[$i]['code']->credit_class) && $$order_totals[$i]['code']->credit_class == true)) {
           $optionsST['handling'] += $order_totals[$i]['value'];
       }
@@ -611,7 +611,7 @@ ipn_logging('DEBUG Round 1', 'Subtotal Info:' . "\n" . print_r($optionsST, true)
       // if there are attributes, loop thru them and add to description
       if (isset($order->products[$i]['attributes']) && sizeof($order->products[$i]['attributes']) > 0 ) {
         for ($j=0, $n2=sizeof($order->products[$i]['attributes']); $j<$n2; $j++) {
-          $optionsLI["item_name_$k"] .= "\n " . $order->products[$i]['attributes'][$j]['option'] . 
+          $optionsLI["item_name_$k"] .= "\n " . $order->products[$i]['attributes'][$j]['option'] .
                                         ': ' . $order->products[$i]['attributes'][$j]['value'];
         } // end loop
       } // endif attribute-info
@@ -626,7 +626,7 @@ ipn_logging('DEBUG Round 1', 'Subtotal Info:' . "\n" . print_r($optionsST, true)
         $onetimeTax += zen_calculate_tax($order->products[$i]['onetime_charges'], $order->products[$i]['tax']);
       }
 
-      // Replace & and = with * if found. 
+      // Replace & and = with * if found.
       $optionsLI["item_name_$k"] = str_replace(array('&','='), '*', $optionsLI["item_name_$k"]);
       $optionsLI["item_name_$k"] = zen_clean_html($optionsLI["item_name_$k"], 'strong');
       $optionsLI["item_name_$k"] = substr($optionsLI["item_name_$k"], 0, 127);

@@ -1,10 +1,10 @@
 <?php
 /**
  * @package admin
- * @copyright Copyright 2003-2007 Zen Cart Development Team
+ * @copyright Copyright 2003-2009 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: application_top.php 7544 2007-11-29 04:40:11Z drbyte $
+ * @version $Id: application_top.php 14753 2009-11-07 19:58:13Z drbyte $
  */
 /**
  * File contains just application_top code

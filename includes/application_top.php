@@ -7,10 +7,10 @@
  * see {@link  http://www.zen-cart.com/wiki/index.php/Developers_API_Tutorials#InitSystem wikitutorials} for more details.
  *
  * @package initSystem
- * @copyright Copyright 2003-2007 Zen Cart Development Team
+ * @copyright Copyright 2003-2009 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: application_top.php 7470 2007-11-24 20:54:50Z drbyte $
+ * @version $Id: application_top.php 14753 2009-11-07 19:58:13Z drbyte $
  */
 
 /**
@@ -56,7 +56,7 @@ if (file_exists('includes/local/configure.php')) {
  * 
  */
 if (defined('STRICT_ERROR_REPORTING') && STRICT_ERROR_REPORTING == true) {
-  @ini_set('display_errors', '1');
+  @ini_set('display_errors', TRUE);
   error_reporting(E_ALL & ~E_DEPRECATED);
 } else {
   error_reporting(0);

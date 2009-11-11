@@ -500,6 +500,7 @@
       include_once('../includes/classes/db/' . $this->getConfigKey('DB_TYPE') . '/query_factory.php');
       $this->db = new queryFactory;
       $this->db->Connect($this->getConfigKey('DB_SERVER'), $this->getConfigKey('DB_SERVER_USERNAME'), $this->getConfigKey('DB_SERVER_PASSWORD'), $this->getConfigKey('DB_DATABASE'), true);
+      $this->db->Execute("SET @@session.sql_mode= '';");
     }
 
     function dbLoadProcedure() {

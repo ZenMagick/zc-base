@@ -4,10 +4,10 @@
  * General functions used throughout Zen Cart
  *
  * @package functions
- * @copyright Copyright 2003-2007 Zen Cart Development Team
+ * @copyright Copyright 2003-2009 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: functions_general.php 7125 2007-09-29 00:03:01Z ajeh $
+ * @version $Id: functions_general.php 14754 2009-11-07 20:35:18Z drbyte $
  */
 if (!defined('IS_ADMIN_FLAG')) {
   die('Illegal Access');
@@ -232,7 +232,7 @@ if (!defined('IS_ADMIN_FLAG')) {
     $search_str = trim(strtolower($search_str));
 
 // Break up $search_str on whitespace; quoted string will be reconstructed later
-    $pieces = split('[[:space:]]+', $search_str);
+    $pieces = preg_split('/[[:space:]]+/', $search_str);
     $objects = array();
     $tmpstring = '';
     $flag = '';
@@ -569,7 +569,7 @@ if (!defined('IS_ADMIN_FLAG')) {
 ////
 // Get the number of times a word/character is present in a string
   function zen_word_count($string, $needle) {
-    $temp_array = split($needle, $string);
+    $temp_array = preg_split('/'.$needle.'/', $string);
 
     return sizeof($temp_array);
   }
@@ -581,7 +581,7 @@ if (!defined('IS_ADMIN_FLAG')) {
 
     if (empty($modules)) return $count;
 
-    $modules_array = split(';', $modules);
+    $modules_array = preg_split('/;/', $modules);
 
     for ($i=0, $n=sizeof($modules_array); $i<$n; $i++) {
       $class = substr($modules_array[$i], 0, strrpos($modules_array[$i], '.'));
@@ -622,7 +622,7 @@ if (!defined('IS_ADMIN_FLAG')) {
       } elseif ($type == 'chars') {
         if (preg_match('/^[a-z]$/i', $char)) $rand_value .= $char;
       } elseif ($type == 'digits') {
-        if (preg_match('/^[0-9]$/i', $char)) $rand_value .= $char;
+        if (preg_match('/^[0-9]$/', $char)) $rand_value .= $char;
       }
     }
 
@@ -993,7 +993,7 @@ if (!defined('IS_ADMIN_FLAG')) {
       $back = sizeof($_SESSION['navigation']->path)-2;
       $link = '<a href="' . zen_href_link($_SESSION['navigation']->path[$back]['page'], zen_array_to_string($_SESSION['navigation']->path[$back]['get'], array('action')), $_SESSION['navigation']->path[$back]['mode']) . '">';
     } else {
-      if (isset($_SERVER['HTTP_REFERER']) && strstr($_SERVER['HTTP_REFERER'], HTTP_SERVER)) {
+      if (isset($_SERVER['HTTP_REFERER']) && strstr(HTTP_SERVER, $_SERVER['HTTP_REFERER'])) {
         $link= '<a href="' . $_SERVER['HTTP_REFERER'].'">';
       } else {
         $link = '<a href="' . zen_href_link(FILENAME_DEFAULT) . '">';
@@ -1001,7 +1001,7 @@ if (!defined('IS_ADMIN_FLAG')) {
       $_SESSION['navigation'] = new navigationHistory;
     }
     return $link;
-  }  
+  }
 
 
 ////
