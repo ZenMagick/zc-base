@@ -104,7 +104,7 @@ class table extends base {
 
     $order_total_amount = $_SESSION['cart']->show_total() - $_SESSION['cart']->free_shipping_prices() ;
 
-    $table_cost = split("[:,]" , MODULE_SHIPPING_TABLE_COST);
+    $table_cost = preg_split("/[:,]/" , MODULE_SHIPPING_TABLE_COST);
     $size = sizeof($table_cost);
     for ($i=0, $n=$size; $i<$n; $i+=2) {
       if (round($order_total,9) <= $table_cost[$i]) {

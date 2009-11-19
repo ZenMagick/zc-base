@@ -925,15 +925,15 @@ $customer = $db->Execute("select customers_firstname, customers_lastname
       <tr>
 <?php
     if (!$_POST['coupon_startdate']) {
-      $coupon_startdate = split("[-]", date('Y-m-d'));
+      $coupon_startdate = preg_split("/[-]/", date('Y-m-d'));
     } else {
-      $coupon_startdate = split("[-]", $_POST['coupon_startdate']);
+      $coupon_startdate = preg_split("/[-]/", $_POST['coupon_startdate']);
     }
     if (!$_POST['coupon_finishdate']) {
-      $coupon_finishdate = split("[-]", date('Y-m-d'));
+      $coupon_finishdate = preg_split("/[-]/", date('Y-m-d'));
       $coupon_finishdate[0] = $coupon_finishdate[0] + 1;
     } else {
-      $coupon_finishdate = split("[-]", $_POST['coupon_finishdate']);
+      $coupon_finishdate = preg_split("/[-]/", $_POST['coupon_finishdate']);
     }
 ?>
         <td align="left" class="main"><?php echo COUPON_STARTDATE; ?></td>
