@@ -3260,4 +3260,16 @@ function zen_copy_products_attributes($products_id_from, $products_id_to) {
     return $orders_comments->fields['comments'];
   }
 
+
+	function zen_user_has_gv_balance($c_id) {
+      global $db;
+        $gv_result = $db->Execute("select amount from " . TABLE_COUPON_GV_CUSTOMER . " where customer_id = '" . (int)$c_id . "'");
+        if ($gv_result->RecordCount() > 0) {
+          if ($gv_result->fields['amount'] > 0) {
+            return $gv_result->fields['amount'];
+          }
+        }
+        return 0;
+  }
+
 ?>
