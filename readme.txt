@@ -6,8 +6,9 @@ http://www.zen-cart.com/forum/showthread.php?t=130161
 http://www.zen-cart.com/forum/showthread.php?t=130701
 List of popular bugfixes for v1.3.8: http://www.zen-cart.com/forum/showthread.php?t=82619 (Up to post#35)
 
-PCI Scan patch:
+PCI Scan patches:
 http://www.zen-cart.com/forum/showthread.php?t=130701
+http://www.zen-cart.com/forum/showpost.php?p=809045&postcount=2
 
 USPS Patch May 2008:
 http://www.zen-cart.com/forum/showthread.php?t=97461
