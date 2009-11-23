@@ -432,6 +432,9 @@ class queryFactoryResult {
   }
 
     function RecordCount() {
+      if(is_bool($this->resource)) {
+        return 0;
+      }
     return @mysql_num_rows($this->resource);
   }
 
