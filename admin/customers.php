@@ -1170,6 +1170,7 @@ if (($_GET['page'] == '' or $_GET['page'] == '1') and $_GET['cID'] != '') {
       break;
     default:
       if (isset($cInfo) && is_object($cInfo)) {
+        if (isset($_GET['search'])) $_GET['search'] = zen_output_string_protected($_GET['search']);
         $customers_orders = $db->Execute("select o.orders_id, o.date_purchased, o.order_total, o.currency, o.currency_value,
                                           cgc.amount
                                           from " . TABLE_ORDERS . " o

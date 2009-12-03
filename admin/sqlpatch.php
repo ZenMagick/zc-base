@@ -805,7 +805,7 @@ if ($_GET['debug']=='ON') echo $line . '<br />';
       <tr><td class="alert" colspan="2" style="padding-left:110px;"><?php echo HEADING_WARNING_INSTALLSCRIPTS; ?></td></tr>
 
     <tr><?php echo zen_draw_form('getqueryfile', FILENAME_SQLPATCH, 'action=uploadquery' . (($debug==true)?'&debug=ON':'') . (($skip_stripslashes==true)?'&keepslashes=1':'') ,'post', 'enctype="multipart/form-data"'); ?>
-<?php if (isset($_GET['nogrants'])) echo '<input type="hidden" id="nogrants" name="nogrants" value="'.$_GET['nogrants'].'" />'; ?>
+<?php if (isset($_GET['nogrants'])) echo '<input type="hidden" id="nogrants" name="nogrants" value="'.(bool)$_GET['nogrants'].'" />'; ?>
       <td><table border="0" cellpadding="0" cellspacing="2">
         <tr>
           <td valign="top" class="main" width="110px">&nbsp;<?php echo TEXT_QUERY_FILENAME; ?> </td>

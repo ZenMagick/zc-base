@@ -17,6 +17,10 @@ Patches not applied:
 ISSUE WITH GODADDY HOSTING CUSTOMERS VS PAYPAL
 http://www.zen-cart.com/forum/showpost.php?p=612520&postcount=25
 
+XSS Patch November 2009:
+http://www.zen-cart.com/forum/showthread.php?s=215386dfa2b225cb2bd62bbda98529ec&p=813183
+
+
 PHP5.3 changes:
 - rename date_diff to zen_date_diff
 - change error reporting, adding & ~E_DEPRECATED
