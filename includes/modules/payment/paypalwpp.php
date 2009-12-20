@@ -532,9 +532,10 @@ class paypalwpp extends base {
       // debug output
       $this->zcLog('before_process - EC-4', 'info being submitted:' . "\n" . $_SESSION['paypal_ec_token'] . ' ' . $_SESSION['paypal_ec_payer_id'] . ' ' . number_format($order_amount, 2) .  "\n" . print_r($options, true));
 
+      if (!isset($options['AMT'])) $options['AMT'] = number_format($order_amount, 2, '.', '');
       $response = $doPayPal->DoExpressCheckoutPayment($_SESSION['paypal_ec_token'],
                                                       $_SESSION['paypal_ec_payer_id'],
-                                                      number_format((isset($options['AMT']) ? $options['AMT'] : $order_amount), 2),
+                                                      $options['AMT'],
                                                       $options);
 
       $this->zcLog('before_process - EC-5', 'resultset:' . "\n" . urldecode(print_r($response, true)));
@@ -1354,6 +1355,10 @@ class paypalwpp extends base {
   function calc_order_amount($amount, $paypalCurrency, $applyFormatting = false) {
     global $currencies;
     $amount = ($amount) * $currencies->get_value($paypalCurrency);
+    if ($paypalCurrency == 'JPY') {
+      $amount = (int)$amount;
+      $applyFormatting = FALSE;
+    }
     return ($applyFormatting ? number_format($amount, $currencies->get_decimal_places($paypalCurrency)) : $amount);
   }
   /**

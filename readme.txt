@@ -4,7 +4,7 @@ http://www.zen-cart.com/forum/showthread.php?t=102802
 http://www.zen-cart.com/forum/showthread.php?t=108428
 http://www.zen-cart.com/forum/showthread.php?t=130161
 http://www.zen-cart.com/forum/showthread.php?t=130701
-List of popular bugfixes for v1.3.8: http://www.zen-cart.com/forum/showthread.php?t=82619 (Up to post#35)
+List of popular bugfixes for v1.3.8: http://www.zen-cart.com/forum/showthread.php?t=82619 (Up to post#36 and #39)
 
 PCI Scan patches:
 http://www.zen-cart.com/forum/showthread.php?t=130701
