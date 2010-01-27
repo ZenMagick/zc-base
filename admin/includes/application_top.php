@@ -20,6 +20,7 @@
 /**
  * set the level of error reporting
  */
+if (!defined('E_DEPRECATED')) { constant('E_DEPRECATED', 8192); }
 error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
 
 /*
