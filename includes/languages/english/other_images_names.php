@@ -15,7 +15,7 @@ define('OTHER_IMAGE_BLACK_SEPARATOR', 'pixel_black.gif');
 define('OTHER_IMAGE_BOX_NOTIFY_REMOVE', 'box_products_notifications_remove.gif');
 define('OTHER_IMAGE_BOX_NOTIFY_YES', 'box_products_notifications.gif');
 define('OTHER_IMAGE_BOX_WRITE_REVIEW', 'box_write_review.gif');
-define('OTHER_IMAGE_CALL_FOR_PRICE', 'call_for_prices.jpg');
+define('OTHER_IMAGE_CALL_FOR_PRICE', 'call_for_prices.gif');
 define('OTHER_IMAGE_DOWN_FOR_MAINTENANCE', 'down_for_maintenance.gif');
 define('OTHER_IMAGE_PRICE_IS_FREE', 'free.gif');
 define('OTHER_IMAGE_TRANPARENT', 'pixel_trans.gif');
