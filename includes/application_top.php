@@ -19,6 +19,9 @@
 if (!defined('E_DEPRECATED')) { constant('E_DEPRECATED', 8192); }
 error_reporting(E_ALL & ~E_DEPRECATED);
 
+// ensure a default timezone is set
+if (!@ini_get('date.timezone')) { date_default_timezone_set(@date_default_timezone_get() ? @date_default_timezone_get() : 'UTC'); }
+
 /*
  * turn off magic-quotes support, for both runtime and sybase, as both will cause problems if enabled
  */
