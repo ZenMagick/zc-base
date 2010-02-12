@@ -4,7 +4,7 @@
  * @copyright Copyright 2003-2007 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: general.php 7125 2007-09-29 00:03:01Z ajeh $
+ * @version $Id: general.php 14753 2009-11-07 19:58:13Z drbyte $
  */
 
 ////
@@ -2377,10 +2377,10 @@ function zen_copy_products_attributes($products_id_from, $products_id_to) {
   function zen_get_products_category_id($products_id) {
     global $db;
 
-    $the_products_category_query = "select products_id, master_categories_id from " . TABLE_PRODUCTS . " where products_id = '" . (int)$products_id . "'";
+    $the_products_category_query = "select products_id, categories_id from " . TABLE_PRODUCTS_TO_CATEGORIES . " where products_id = '" . $products_id . "'" . " order by products_id,categories_id";
     $the_products_category = $db->Execute($the_products_category_query);
 
-    return $the_products_category->fields['master_categories_id'];
+    return $the_products_category->fields['categories_id'];
   }
 
 

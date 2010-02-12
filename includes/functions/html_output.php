@@ -366,12 +366,11 @@
 /*
  *  Output a form input field
  */
-  function zen_draw_input_field($name, $value = '~*~*#', $parameters = '', $type = 'text', $reinsert_value = true) {
+  function zen_draw_input_field($name, $value = '', $parameters = '', $type = 'text', $reinsert_value = true) {
     $field = '<input type="' . zen_output_string($type) . '" name="' . zen_output_string($name) . '"';
-
-    if ( $value == '~*~*#' && (isset($GLOBALS[$name]) && is_string($GLOBALS[$name])) && ($reinsert_value == true) ) {
+    if ( (isset($GLOBALS[$name]) && is_string($GLOBALS[$name])) && ($reinsert_value == true) ) {
       $field .= ' value="' . zen_output_string(stripslashes($GLOBALS[$name])) . '"';
-    } elseif ($value != '~*~*#' && zen_not_null($value)) {
+    } elseif (zen_not_null($value)) {
       $field .= ' value="' . zen_output_string($value) . '"';
     }
 

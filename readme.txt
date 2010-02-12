@@ -4,9 +4,11 @@ http://www.zen-cart.com/forum/showthread.php?t=102802
 http://www.zen-cart.com/forum/showthread.php?t=108428
 http://www.zen-cart.com/forum/showthread.php?t=130161
 http://www.zen-cart.com/forum/showthread.php?t=130701
-List of popular bugfixes for v1.3.8: http://www.zen-cart.com/forum/showthread.php?t=82619 (Up to post#36 and #39)
+http://www.zen-cart.com/forum/showthread.php?p=813183#post813183
 
-PCI Scan patches:
+List of popular bugfixes for v1.3.8: http://www.zen-cart.com/forum/showthread.php?t=82619 (Up to post#41)
+
+PCI Scan patch:
 http://www.zen-cart.com/forum/showthread.php?t=130701
 http://www.zen-cart.com/forum/showpost.php?p=809045&postcount=2
 
@@ -28,3 +30,5 @@ PHP5.3 changes:
 - change some MySQL5 issues in the installer
 
 - apply (most) of the official Zen Cart PHP5.3 patches
+
+Resynced with rubikintegration version: 12/02/2010

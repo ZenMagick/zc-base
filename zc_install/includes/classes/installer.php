@@ -4,10 +4,10 @@
  * This class is used during the installation and upgrade processes
  * @package Installer
  * @access private
- * @copyright Copyright 2003-2007 Zen Cart Development Team
+ * @copyright Copyright 2003-2009 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: installer.php 7619 2007-12-11 17:49:09Z drbyte $
+ * @version $Id: installer.php 14714 2009-10-29 04:05:32Z drbyte $
  */
 
 
@@ -162,13 +162,14 @@
     function dbConnect($zp_type, $zp_host, $zp_database, $zp_username, $zp_pass, $zp_error_text, $zp_error_code, $zp_error_text2=ERROR_TEXT_DB_NOTEXIST, $zp_error_code2=ERROR_CODE_DB_NOTEXIST) {
       if ($this->error == false) {
         if ($zp_type == 'mysql') {
-          if (($dbHandle = @mysql_connect($zp_host, $zp_username, $zp_pass)) == false ) {
+          $link = @mysql_connect($zp_host, $zp_username, $zp_pass);
+          if ($link == false ) {
             $this->setError($zp_error_text.'<br />'.@mysql_error(), $zp_error_code, true);
           } else {
-            if (!@mysql_select_db($zp_database)) {
+            if (!@mysql_select_db($zp_database, $link)) {
               $this->setError($zp_error_text2.'<br />'.@mysql_error(), $zp_error_code2, true);
             } else {
-              @mysql_close($dbHandle);
+              @mysql_close($link);
             }
           }
         }
@@ -187,11 +188,11 @@
       //    echo $zp_create;
       if ($zp_create != 'true' && $this->error == false) {
         if ($zp_type == 'mysql') {
-          $dbHandle = @mysql_connect($zp_host, $zp_username, $zp_pass);
-          if (@mysql_select_db($zp_name) == false) {
+          $link = @mysql_connect($zp_host, $zp_username, $zp_pass);
+          if (@mysql_select_db($zp_name, $link) == false) {
             $this->setError($zp_error_text.'<br />'.@mysql_error(), $zp_error_code, true);
           }
-          @mysql_close($dbHandle);
+          @mysql_close($link);
         }
       }
     }
@@ -223,7 +224,7 @@
    * returns string
    */
     function test_curl($mode='NONSSL', $proxy = false, $proxyAddress = '') {
-      if (!function_exists('curl_init')) {
+      if (!function_exists('curl_init') || !function_exists('curl_exec') || stristr(ini_get('disable_functions'), array('curl_exec', 'curl_init')) ) {
         $this->setError(ERROR_TEXT_CURL_NOT_COMPILED, ERROR_CODE_CURL_SUPPORT, false);
         return ERROR_TEXT_CURL_NOT_COMPILED;
       }
@@ -413,9 +414,9 @@
       $https_server = $this->getConfigKey('virtual_https_server');
       $https_catalog = $this->getConfigKey('virtual_https_path');
       //if the https:// entries were left blank, use non-SSL versions instead of blank
-      if ($https_server=='' || $https_server=='https://' || $https_server=='://') $https_server=$http_server;
-      if ($https_catalog=='') $https_catalog=$http_catalog;
-      $https_catalog_path = str_replace($https_server,'',$https_catalog) . '/';
+      if ($https_server == '' || trim($https_server) == '' || $https_server == 'https://' || $https_server == '://') $https_server = $http_server;
+      if (trim($https_catalog) == '') $https_catalog = $http_catalog;
+      $https_catalog_path = preg_replace('/' . preg_quote($https_server, '/') . '/', '', $https_catalog) . '/';
       $https_catalog = $https_catalog_path;
 
       //now let's write the files
@@ -426,7 +427,7 @@
       if ($fp) {
         fputs($fp, $file_contents);
         fclose($fp);
-        @chmod($this->getConfigKey('DIR_FS_CATALOG') . '/includes/configure.php', 0644);
+        @chmod($this->getConfigKey('DIR_FS_CATALOG') . '/includes/configure.php', 0444);
       }
       // now Admin version:
       require('includes/admin_configure.php');
@@ -435,7 +436,7 @@
       if ($fp) {
         fputs($fp, $file_contents);
         fclose($fp);
-        @chmod($this->getConfigKey('DIR_FS_CATALOG') . '/admin/includes/configure.php', 0644);
+        @chmod($this->getConfigKey('DIR_FS_CATALOG') . '/admin/includes/configure.php', 0444);
       }
 
       $this->configFiles = array('catalog' => $config_file_contents_catalog, 'admin' => $config_file_contents_admin);
@@ -467,7 +468,7 @@
         $this->isWriteable($data['sql_cache_dir'],  ERROR_TEXT_CACHE_DIR_ISWRITEABLE, ERROR_CODE_CACHE_DIR_ISWRITEABLE);
       }
       //$this->checkPrefix($data['db_prefix'], ERROR_TEXT_DB_PREFIX_NODOTS, ERROR_CODE_DB_PREFIX_NODOTS);
-      $data['db_prefix'] == preg_replace('/[^0-9a-zA-Z_]/', '_', $data['db_prefix']);
+      $data['db_prefix'] == preg_replace('/[^0-9a-zA-Z_]/', '_', trim($data['db_prefix']));
       $this->isEmpty($data['db_host'], ERROR_TEXT_DB_HOST_ISEMPTY, ERROR_CODE_DB_HOST_ISEMPTY);
       $this->isEmpty($data['db_username'], ERROR_TEXT_DB_USERNAME_ISEMPTY, ERROR_CODE_DB_USERNAME_ISEMPTY);
       $this->isEmpty($data['db_name'], ERROR_TEXT_DB_NAME_ISEMPTY, ERROR_CODE_DB_NAME_ISEMPTY);

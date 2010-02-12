@@ -71,7 +71,11 @@ class payment extends base {
         }
         include_once(DIR_WS_MODULES . 'payment/' . $include_modules[$i]['file']);
 
-        $GLOBALS[$include_modules[$i]['class']] = new $include_modules[$i]['class'];
+        $paymentClass = new $include_modules[$i]['class'];
+        if ($paymentClass->enabled)
+        {
+          $GLOBALS[$include_modules[$i]['class']] = $paymentClass;
+        }
       }
 
       // if there is only one payment method, select it as default because in

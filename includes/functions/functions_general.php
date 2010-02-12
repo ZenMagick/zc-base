@@ -222,7 +222,7 @@ if (!defined('IS_ADMIN_FLAG')) {
     if ($year != 1969 && @date('Y', mktime($hour, $minute, $second, $month, $day, $year)) == $year) {
       return date(DATE_FORMAT, mktime($hour, $minute, $second, $month, $day, $year));
     } else {
-      return preg_replace('/2037$/', $year, date(DATE_FORMAT, mktime($hour, $minute, $second, $month, $day, 2037)));
+      return preg_replace('/2037/' . '$', $year, date(DATE_FORMAT, mktime($hour, $minute, $second, $month, $day, 2037)));
     }
   }
 
@@ -540,12 +540,11 @@ if (!defined('IS_ADMIN_FLAG')) {
           while (list($opt, $val) = each($value)) {
             $uprid = $uprid . '{' . $option . '}' . trim($opt);
           }
-          break;
-        }
+        } else {
         //CLR 030714 Add processing around $value. This is needed for text attributes.
-        $uprid = $uprid . '{' . $option . '}' . trim($value);
-      }
-    //CLR 030228 Add else stmt to process product ids passed in by other routines.
+            $uprid = $uprid . '{' . $option . '}' . trim($value);
+        }
+      }      //CLR 030228 Add else stmt to process product ids passed in by other routines.
       $md_uprid = '';
 
       $md_uprid = md5($uprid);
@@ -847,7 +846,9 @@ if (!defined('IS_ADMIN_FLAG')) {
     $sql = "SELECT count(*) AS total
             FROM " . TABLE_COUPON_RESTRICT . "
             WHERE category_id = -1
-            AND coupon_restrict = 'Y'";
+           AND coupon_restrict = 'Y'
+            AND coupon_id = " . (int)$coupon_id . " LIMIT 1";
+
     $checkQuery = $db->execute($sql);
     foreach ($catPathArray as $catPath) {
       $sql = "SELECT * FROM " . TABLE_COUPON_RESTRICT . "
@@ -994,7 +995,7 @@ if (!defined('IS_ADMIN_FLAG')) {
       $link = '<a href="' . zen_href_link($_SESSION['navigation']->path[$back]['page'], zen_array_to_string($_SESSION['navigation']->path[$back]['get'], array('action')), $_SESSION['navigation']->path[$back]['mode']) . '">';
     } else {
       if (isset($_SERVER['HTTP_REFERER']) && strstr(HTTP_SERVER, $_SERVER['HTTP_REFERER'])) {
-        $link= '<a href="' . $_SERVER['HTTP_REFERER'].'">';
+        $link= $_SERVER['HTTP_REFERER'];
       } else {
         $link = '<a href="' . zen_href_link(FILENAME_DEFAULT) . '">';
       }

@@ -724,7 +724,7 @@ function go_option() {
           $value_name = $db->Execute("select products_options_values_name
                                       from " . TABLE_PRODUCTS_OPTIONS_VALUES . "
                                       where products_options_values_id = '" . (int)$values_values->fields['products_options_values_id'] . "' and language_id = '" . (int)$languages[$i]['id'] . "'");
-          $inputs .= $languages[$i]['code'] . ':&nbsp;<input type="text" name="value_name[' . $languages[$i]['id'] . ']" ' . zen_set_field_length(TABLE_PRODUCTS_OPTIONS_VALUES, 'products_options_values_name', 25) . ' value="' . $value_name->fields['products_options_values_name'] . '">&nbsp;<br />';
+          $inputs .= $languages[$i]['code'] . ':&nbsp;<input type="text" name="value_name[' . $languages[$i]['id'] . ']" ' . zen_set_field_length(TABLE_PRODUCTS_OPTIONS_VALUES, 'products_options_values_name', 25) . ' value="' . zen_output_string($value_name->fields['products_options_values_name']) . '">&nbsp;<br />';
         }
           $products_options_values_sort_order = $db->Execute("select distinct products_options_values_sort_order from " . TABLE_PRODUCTS_OPTIONS_VALUES . " where products_options_values_id = '" . (int)$values_values->fields['products_options_values_id'] . "'");
           $inputs2 .= '&nbsp;<input type="text" name="products_options_values_sort_order" size="4" value="' . $products_options_values_sort_order->fields['products_options_values_sort_order'] . '">&nbsp;';

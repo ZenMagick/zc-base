@@ -143,7 +143,7 @@
         $shipping = -1;
         $zones_cost = constant('MODULE_SHIPPING_ZONES_COST_' . $dest_zone);
 
-        $zones_table = preg_split("/[:,]/" , $zones_cost);
+        $zones_table = preg_split("/[:,]/s" , $zones_cost);
         $size = sizeof($zones_table);
         $done = false;
         for ($i=0; $i<$size; $i+=2) {
