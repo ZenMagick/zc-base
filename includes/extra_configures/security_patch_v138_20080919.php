@@ -3,9 +3,9 @@
  * Security Patch v1.3.8 20080919
  * 
  * @package initSystem
- * @copyright Copyright 2003-2008 Zen Cart Development Team
+ * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: security_patch_v138_20080919.php 9900 2008-09-22 21:39:12Z wilt $
+ * @version $Id: security_patch_v138_20080919.php 15882 2010-04-11 16:37:54Z wilt $
  */
 /**
  * Security Patch
@@ -25,6 +25,10 @@ if (isset($_POST['id']) && is_array($_POST['id']) && count($_POST['id']) > 0)
 if (isset($_POST['products_id']) && is_array($_POST['products_id']) && count($_POST['products_id']) > 0)
 {
   $_POST['products_id'] = securityPatchSanitizePostVariableProductsId($_POST['products_id']);
+}
+if (isset($_POST['notify']) && is_array($_POST['notify']) && count($_POST['notify']) > 0)
+{
+  $_POST['notify'] = securityPatchSanitizePostVariableProductsId($_POST['notify']);
 }
 function securityPatchSanitizePostVariableId ($arrayToSanitize)
 {
@@ -55,7 +59,7 @@ function securityPatchSanitizePostVariableProductsId ($arrayToSanitize)
     {
       $arrayToSanitize[$key] = preg_replace('/[^0-9a-fA-F:.]/', '', $variableToSanitize);
     }
-    if (preg_replace('/[0-9a-zA-z_]/', '', $key) != '')
+    if (preg_replace('/[0-9a-zA-z_:.]/', '', $key) != '')
       unset($arrayToSanitize[$key]);
   }
   return $arrayToSanitize;

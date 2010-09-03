@@ -5,10 +5,10 @@
  * Prepares list of additional product images to be displayed in template
  *
  * @package templateSystem
- * @copyright Copyright 2003-2007 Zen Cart Development Team
+ * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: additional_images.php 6132 2007-04-08 06:58:40Z drbyte $
+ * @version $Id: additional_images.php 16913 2010-07-16 03:38:06Z ajeh $
  */
 if (!defined('IS_ADMIN_FLAG')) {
   die('Illegal Access');
@@ -16,7 +16,8 @@ if (!defined('IS_ADMIN_FLAG')) {
 if (!defined('IMAGE_ADDITIONAL_DISPLAY_LINK_EVEN_WHEN_NO_LARGE')) define('IMAGE_ADDITIONAL_DISPLAY_LINK_EVEN_WHEN_NO_LARGE','Yes');
 $images_array = array();
 
-if ($products_image != '') {
+// do not check for additional images when turned off
+if ($products_image != '' && $flag_show_product_info_additional_images != 0) {
   // prepare image name
   $products_image_extension = substr($products_image, strrpos($products_image, '.'));
   $products_image_base = str_replace($products_image_extension, '', $products_image);
@@ -110,4 +111,3 @@ if ($num_images) {
   } // end for loop
 } // endif
 
-?>

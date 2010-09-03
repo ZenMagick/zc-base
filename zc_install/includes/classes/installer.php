@@ -4,10 +4,10 @@
  * This class is used during the installation and upgrade processes
  * @package Installer
  * @access private
- * @copyright Copyright 2003-2009 Zen Cart Development Team
+ * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: installer.php 14714 2009-10-29 04:05:32Z drbyte $
+ * @version $Id: installer.php 16936 2010-07-20 17:20:01Z drbyte $
  */
 
 
@@ -113,15 +113,16 @@
     }
 
     function isEmpty($zp_test, $zp_error_text, $zp_error_code) {
-      if (!$zp_test || $zp_test=='http://' || $zp_test=='https://' ) {
+      if ($zp_test == '' || $zp_test=='http://' || $zp_test=='https://' ) {
         $this->setError($zp_error_text, $zp_error_code, true);
       }
       return $zp_test;
     }
 
     function checkPrefix($zp_test, $zp_error_text, $zp_error_code) {
-      if (preg_replace('/[^0-9a-zA-Z_]/', '_', $zp_test) != $zp_test) {
-        $this->setError($zp_error_text, $zp_error_code, true);
+      if ($zp_test == '') return true;
+      if (!preg_match( '#^[a-zA-Z]+[a-zA-Z0-9_]*$#', $zp_test) || strlen($zp_test) > 16) {
+        $this->setError('Your db prefix of "'.$zp_test.'" is a potential problem. ' . $zp_error_text, $zp_error_code, true);
       }
     }
 
@@ -210,6 +211,7 @@
     }
 
     function setError($zp_error_text, $zp_error_code, $zp_fatal = false) {
+      $zp_error_text = strip_tags($zp_error_text, '<br>');
       $this->error = true;
       $this->fatal_error = $zp_fatal;
       $this->error_array[] = array('text'=>$zp_error_text, 'code'=>$zp_error_code);
@@ -224,13 +226,13 @@
    * returns string
    */
     function test_curl($mode='NONSSL', $proxy = false, $proxyAddress = '') {
-      if (!function_exists('curl_init') || !function_exists('curl_exec') || stristr(ini_get('disable_functions'), array('curl_exec', 'curl_init')) ) {
+      if (!function_exists('curl_init') || !function_exists('curl_exec') || stristr(ini_get('disable_functions'), 'curl_exec') || stristr(ini_get('disable_functions'), 'curl_init') ) {
         $this->setError(ERROR_TEXT_CURL_NOT_COMPILED, ERROR_CODE_CURL_SUPPORT, false);
         return ERROR_TEXT_CURL_NOT_COMPILED;
       }
       $url = ($mode == 'NONSSL') ? "http://www.zen-cart.com/testcurl.php" : "https://www.zen-cart.com/testcurl.php";
       $data = "installertest=checking";
-      if ($proxy && $proxyAddress == '') $proxyAddress = 'proxy.shr.secureserver.net:3128';
+      if ($proxy) return false;
 
       // Send CURL communication
       $ch = curl_init();
@@ -239,7 +241,7 @@
       curl_setopt($ch, CURLOPT_POST, 1);
       curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
       curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-      curl_setopt($ch, CURLOPT_TIMEOUT, 4);
+      curl_setopt($ch, CURLOPT_TIMEOUT, 11);
       curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE); /* compatibility for SSL communications on some Windows servers (IIS 5.0+) */
       if ($proxy) {
         curl_setopt ($ch, CURLOPT_HTTPPROXYTUNNEL, true);
@@ -477,9 +479,10 @@
       $this->dbConnect($data['db_type'], $data['db_host'], $data['db_name'], $data['db_username'], $data['db_pass'], ERROR_TEXT_DB_CONNECTION_FAILED, ERROR_CODE_DB_CONNECTION_FAILED,ERROR_TEXT_DB_NOTEXIST, ERROR_CODE_DB_NOTEXIST);
       $this->dbExists(false, $data['db_type'], $data['db_host'], $data['db_username'], $data['db_pass'], $data['db_name'], ERROR_TEXT_DB_NOTEXIST, ERROR_CODE_DB_NOTEXIST);
       $data['db_sess'] = ($data['db_sess'] == 'true') ? 'db' : '';
-
+      if ($data['db_coll'] != 'utf8') $data['db_coll'] = 'latin1';
       $this->setConfigKey('DB_TYPE', $data['db_type']);
       $this->setConfigKey('DB_PREFIX', $data['db_prefix']);
+      $this->setConfigKey('DB_CHARSET', $data['db_coll']);
       $this->setConfigKey('DB_SERVER', $data['db_host']);
       $this->setConfigKey('DB_SERVER_USERNAME', $data['db_username']);
       $this->setConfigKey('DB_SERVER_PASSWORD', $data['db_pass']);
@@ -493,6 +496,9 @@
     function dbActivate() {
       if (isset($this->db)) return;
       if ($this->getConfigKey('DB_TYPE') == '') $this->setConfigKey('DB_TYPE', zen_read_config_value('DB_TYPE'));
+      if ($this->getConfigKey('DB_CHARSET') == '') $this->setConfigKey('DB_CHARSET', zen_read_config_value('DB_CHARSET'));
+      if ($this->getConfigKey('DB_CHARSET') != 'utf8') $this->setConfigKey('DB_CHARSET', 'latin1');
+      if (!defined('DB_CHARSET') && $this->getConfigKey('DB_CHARSET') != '') define('DB_CHARSET', $this->getConfigKey('DB_CHARSET'));
       if ($this->getConfigKey('DB_PREFIX') == '') $this->setConfigKey('DB_PREFIX', zen_read_config_value('DB_PREFIX'));
       if ($this->getConfigKey('DB_SERVER') == '') $this->setConfigKey('DB_SERVER', zen_read_config_value('DB_SERVER'));
       if ($this->getConfigKey('DB_SERVER_USERNAME') == '') $this->setConfigKey('DB_SERVER_USERNAME', zen_read_config_value('DB_SERVER_USERNAME'));
@@ -501,7 +507,6 @@
       include_once('../includes/classes/db/' . $this->getConfigKey('DB_TYPE') . '/query_factory.php');
       $this->db = new queryFactory;
       $this->db->Connect($this->getConfigKey('DB_SERVER'), $this->getConfigKey('DB_SERVER_USERNAME'), $this->getConfigKey('DB_SERVER_PASSWORD'), $this->getConfigKey('DB_DATABASE'), true);
-      $this->db->Execute("SET @@session.sql_mode= '';");
     }
 
     function dbLoadProcedure() {
@@ -528,6 +533,7 @@
        * Support for SQL Plugins in installer
        */
     function dbHandleSQLPlugins() {
+      $directory_array = array();
       $sqlpluginsdir = 'sql/plugins/';
       if ($dir = @dir($sqlpluginsdir)) {
         while ($file = $dir->read()) {
@@ -547,6 +553,7 @@
         $file = $directory_array[$i];
         if (file_exists($sqlpluginsdir . $file)) {
           echo '<br />Processing Plugin: ' . $sqlpluginsdir . $file . '<br />';
+          $this->logDetails('Processing SQL Plugin: ' . $sqlpluginsdir . $file);
           executeSql($sqlpluginsdir . $file, $this->getConfigKey('DB_DATABASE'), $this->getConfigKey('DB_PREFIX'));
         }
       }
@@ -562,8 +569,8 @@
       $sql = "update ". $this->getConfigKey('DB_PREFIX') ."configuration set configuration_value='". $this->getConfigKey('DIR_FS_SQL_CACHE') ."/page_parse_time.log' where configuration_key = 'STORE_PAGE_PARSE_TIME_LOG'";
       $this->db->Execute($sql);
       //update the phpbb setting:
-      $sql = "update ". $this->getConfigKey('DB_PREFIX') ."configuration set configuration_value='". $this->getConfigKey('PHPBB_ENABLE') ."' where configuration_key = 'PHPBB_LINKS_ENABLED'";
-      $this->db->Execute($sql);
+//      $sql = "update ". $this->getConfigKey('DB_PREFIX') ."configuration set configuration_value='". $this->getConfigKey('PHPBB_ENABLE') ."' where configuration_key = 'PHPBB_LINKS_ENABLED'";
+//      $this->db->Execute($sql);
     }
 
     function dbDemoDataInstall() {
@@ -580,7 +587,10 @@
       $this->configInfo['store_owner_email'] = $this->isEmpty(zen_db_prepare_input($data['store_owner_email']), ERROR_TEXT_STORE_OWNER_EMAIL_NOTEMAIL, ERROR_CODE_STORE_OWNER_EMAIL_NOTEMAIL);
       $this->configInfo['store_address'] = $this->isEmpty(zen_db_prepare_input($data['store_address']), ERROR_TEXT_STORE_ADDRESS_ISEMPTY, ERROR_CODE_STORE_ADDRESS_ISEMPTY);
       $this->configInfo['store_country'] = zen_db_prepare_input($data['store_country']);
-      $this->configInfo['store_zone'] = zen_db_prepare_input($data['store_zone']);
+      $selectedStoreZone = zen_db_prepare_input($data['store_zone']);
+      if ($selectedStoreZone == '-1' && $selectedStoreZone != '0') $data['store_zone'] = '';
+      $this->configInfo['store_zone'] = $this->isEmpty(zen_db_prepare_input($data['store_zone']), ERROR_TEXT_STORE_ZONE_NEEDS_SELECTION, ERROR_CODE_STORE_ZONE_NEEDS_SELECTION);
+      if ($this->configInfo['store_zone'] == '0') $this->configInfo['store_zone'] = '';
       $this->configInfo['store_default_language'] = zen_db_prepare_input($data['store_default_language']);
       $this->configInfo['store_default_currency'] = zen_db_prepare_input($data['store_default_currency']);
     }
@@ -608,6 +618,19 @@
       $this->db->Execute($sql);
     }
 
+    function updateAdminIpList() {
+      if (isset($_SERVER['REMOTE_ADDR']) && strlen($_SERVER['REMOTE_ADDR']) > 4) {
+        $checkip = $_SERVER['REMOTE_ADDR'];
+        $this->dbActivate();
+        $sql = "select configuration_value from " . DB_PREFIX . "configuration where configuration_key = 'EXCLUDE_ADMIN_IP_FOR_MAINTENANCE'";
+        $result = $this->db->Execute($sql);
+        if (!strstr($result->fields['configuration_value'], $checkip)) {
+          $newip = $result->fields['configuration_value'] . ',' . $checkip;
+          $sql = "update " . DB_PREFIX . "configuration set configuration_value = '" . $this->db->prepare_input($newip) . "' where configuration_key = 'EXCLUDE_ADMIN_IP_FOR_MAINTENANCE'";
+          $this->db->Execute($sql);
+        }
+      }
+    }
 
     function validateAdminSetup($data) {
       $this->dbActivate();
@@ -635,21 +658,22 @@
     }
 
 
-    function verifyAdminCredentials($admin_name, $admin_pass) {
+    function verifyAdminCredentials($admin_name, $admin_pass, $prefix = '^^^') {
       // security check
       if ($admin_name == '' || $admin_name == 'demo' || $admin_pass == '') {
         $this->setError(ERROR_TEXT_ADMIN_PWD_REQUIRED, ERROR_CODE_ADMIN_PWD_REQUIRED, true);
       } else {
+        if ($prefix == '^^^') $prefix = DB_PREFIX;
         $admin_name = zen_db_prepare_input($admin_name);
         $admin_pass = zen_db_prepare_input($admin_pass);
-        $sql = "select admin_id, admin_name, admin_pass from " . DB_PREFIX . "admin where admin_name = '" . $admin_name . "'";
+        $sql = "select admin_id, admin_name, admin_pass from " . $prefix . "admin where admin_name = '" . $admin_name . "'";
         //open database connection to run queries against it
         $this->dbActivate();
+        $this->db->Close();
+        unset($this->db);
+        $this->dbActivate();
         $result = $this->db->Execute($sql);
-        if ($admin_name != $result->fields['admin_name']) {
-          $this->setError(ERROR_TEXT_ADMIN_PWD_REQUIRED, ERROR_CODE_ADMIN_PWD_REQUIRED, true);
-        }
-        if (!zen_validate_password($admin_pass, $result->fields['admin_pass'])) {
+        if ($result->EOF || $admin_name != $result->fields['admin_name'] || !zen_validate_password($admin_pass, $result->fields['admin_pass'])) {
           $this->setError(ERROR_TEXT_ADMIN_PWD_REQUIRED, ERROR_CODE_ADMIN_PWD_REQUIRED, true);
         }
         $this->db->Close();
@@ -668,13 +692,16 @@
       if ((!isset($_POST['adminid']) && !isset($_POST['adminpwd'])) || $_POST['adminid']=='' || $_POST['adminid']=='demo') {
         $this->setError(ERROR_TEXT_ADMIN_PWD_REQUIRED, ERROR_CODE_ADMIN_PWD_REQUIRED, true);
       } else {
-        $this->verifyAdminCredentials($_POST['adminid'], $_POST['adminpwd']);
+        $this->verifyAdminCredentials($_POST['adminid'], $_POST['adminpwd'], $db_prefix_rename_from);
       }
       // end admin verification
 
       if (ZC_UPG_DEBUG2==true) echo 'Processing prefix updates...<br />';
       if ($this->error == false && $nothing_to_process==false) {
 
+        $this->dbActivate();
+        $this->db->Close();
+        unset($this->db);
         $this->dbActivate();
         $tables = $this->db->Execute("SHOW TABLES"); // get a list of tables to compare against
         $tables_list = array();
@@ -761,4 +788,3 @@
 
   } // end class
 
-?>

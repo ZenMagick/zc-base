@@ -1,13 +1,13 @@
 <?php
-/** 
- * phpBB Class.
+/**
+ * phpBB3 Class.
  *
- * This class is used to interact with phpBB forum
+ * This class is used to interact with phpBB3 forum
  *
  * @package classes
- * @copyright Copyright 2003-2006 Zen Cart Development Team
+ * @copyright Copyright 2003-2009 Zen Cart Development Team
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: class.phpbb.php 4824 2006-10-23 21:01:28Z drbyte $
+ * @version $Id: class.phpbb.php 14689 2009-10-26 17:06:43Z drbyte $
  */
 
 if (!defined('IS_ADMIN_FLAG')) {
@@ -18,17 +18,15 @@ if (!defined('IS_ADMIN_FLAG')) {
       var $debug = false;
       var $db_phpbb;
       var $phpBB=array();
-      var $dir_phpbb=''; 
+      var $dir_phpbb='';
+      var $groupId = 2;
 
     function phpBB() {
-      $this->debug= (defined('PHPBB_DEBUG_MODE') && strtoupper(PHPBB_DEBUG_MODE)=='ON') ? (defined('PHPBB_DEBUG_IP') && (PHPBB_DEBUG_IP == '' || PHPBB_DEBUG_IP == $_SERVER['REMOTE_ADDR'] || strstr(EXCLUDE_ADMIN_IP_FOR_MAINTENANCE, $_SERVER['REMOTE_ADDR'])) ? true : false ) : false;
+      $this->debug = (defined('PHPBB_DEBUG_MODE') && strtoupper(PHPBB_DEBUG_MODE)=='ON') ? (defined('PHPBB_DEBUG_IP') && (PHPBB_DEBUG_IP == '' || PHPBB_DEBUG_IP == $_SERVER['REMOTE_ADDR'] || strstr(EXCLUDE_ADMIN_IP_FOR_MAINTENANCE, $_SERVER['REMOTE_ADDR'])) ? true : false ) : false;
       $this->phpBB = Array();
-      $this->phpBB['installed']=false;
+      $this->phpBB['installed'] = false;
       if (PHPBB_LINKS_ENABLED =='true') {  // if disabled in Zen Cart admin, don't do any checks for phpBB
         $this->get_phpBB_info();
-      
-//        global $db;
-//        $this->db_phpbb = $db;
 
         $this->db_phpbb = new queryFactory();
         $connect_status = $this->db_phpbb->connect($this->phpBB['dbhost'], $this->phpBB['dbuser'], $this->phpBB['dbpasswd'], $this->phpBB['dbname'], USE_PCONNECT, false);
@@ -42,8 +40,8 @@ if (!defined('IS_ADMIN_FLAG')) {
     }
 
     function get_phpBB_info() {
-      $this->phpBB['db_installed']=false;
-      $this->phpBB['files_installed']=false;
+      $this->phpBB['db_installed'] = false;
+      $this->phpBB['files_installed'] = false;
       $this->phpBB['phpbb_path']='';
       $this->phpBB['phpbb_url']='';
 
@@ -72,7 +70,7 @@ if (!defined('IS_ADMIN_FLAG')) {
           if (substr_count($line,"'")>1) $delim="'"; // determine whether single or double quotes used in this line.
           $def_string=array();
           $def_string=explode($delim,trim($line));
-          if (substr($line,0,7)=='$dbhost') $this->phpBB['dbhost'] = $def_string[1];
+          if (substr($line,0,7)=='$dbhost') $this->phpBB['dbhost'] = ($def_string[1] == '' ? 'localhost' : $def_string[1]);
           if (substr($line,0,7)=='$dbname') $this->phpBB['dbname'] = $def_string[1];
           if (substr($line,0,7)=='$dbuser') $this->phpBB['dbuser'] = $def_string[1];
           if (substr($line,0,9)=='$dbpasswd') $this->phpBB['dbpasswd'] = $def_string[1];
@@ -117,7 +115,7 @@ if (!defined('IS_ADMIN_FLAG')) {
     function check_connect() {
         // check if tables exist in database
         if ($this->phpBB['dbname']!='' && $this->phpBB['dbuser'] !='' && $this->phpBB['dbhost'] !='' && $this->phpBB['config_table']!='' && $this->phpBB['users_table'] !='' && $this->phpBB['user_group_table'] !='' && $this->phpBB['groups_table']!='') {
-          if ($this->dbname == DB_DATABASE) {
+          if ($this->phpBB['dbname'] == DB_DATABASE) {
             $this->phpBB['db_installed'] = $this->table_exists_zen($this->phpBB['users_table']);
             $this->phpBB['db_installed_config'] = $this->table_exists_zen($this->phpBB['config_table']);
             if ($this->debug==true) echo "db_installed -- in ZC Database = ".$this->phpBB['db_installed']."<br>";
@@ -177,6 +175,28 @@ if (!defined('IS_ADMIN_FLAG')) {
 
     function phpbb_create_account($nick, $password, $email_address) {
       if ($this->phpBB['installed'] != true || !zen_not_null($password) || !zen_not_null($email_address) || !zen_not_null($nick)) return false;
+      if (!$this->phpbb_check_for_duplicate_email($email_address) == 'already_exists') {
+        $sql = "select max(user_id) as total from " . $this->phpBB['users_table'];
+        $phpbb_users = $this->db_phpbb->Execute($sql);
+        $user_id = ($phpbb_users->fields['total'] + 1);
+        $sql = "insert into " . $this->phpBB['users_table'] . "
+                (user_id, group_id, username, username_clean, user_password, user_email, user_email_hash, user_regdate, user_permissions, user_sig, user_occ, user_interests)
+                values
+                ('" . (int)$user_id . "', " . $this->groupId . ", '" . $nick . "', '" . strtolower($nick) . "', '" . md5($password) . "', '" . $email_address . "', '" . crc32(strtolower($email_address)) . strlen($email_address) . "', '" . time() ."', '', '', '', '')";
+        $this->db_phpbb->Execute($sql);
+        $sql = " update " . $this->phpBB['config_table'] . " SET config_value = '{$user_id}' WHERE config_name = 'newest_user_id'";
+        $this->db_phpbb->Execute($sql);
+        $sql = " update " . $this->phpBB['config_table'] . " SET config_value = '{$nick}' WHERE config_name = 'newest_username'";
+        $this->db_phpbb->Execute($sql);
+        $sql = " update " . $this->phpBB['config_table'] . " SET config_value = config_value + 1 WHERE config_name = 'num_users'";
+        $this->db_phpbb->Execute($sql);
+        $sql = "INSERT INTO " . $this->phpBB['user_group_table'] . " (user_id, group_id, user_pending)
+                VALUES ($user_id, $this->groupId, 0)";
+        $this->db_phpbb->Execute($sql);
+      }
+    }
+    function v2phpbb_create_account($nick, $password, $email_address) {
+      if ($this->phpBB['installed'] != true || !zen_not_null($password) || !zen_not_null($email_address) || !zen_not_null($nick)) return false;
       if ($this->phpbb_check_for_duplicate_email($email_address) == 'already_exists') {
 //        $this->phpbb_change_email($old_email, $email_address);
       } else {
@@ -188,10 +208,6 @@ if (!defined('IS_ADMIN_FLAG')) {
                 values
                 ('" . (int)$user_id . "', '" . $nick . "', '" . md5($password) . "', '" . $email_address . "', '" . time() ."')";
         $this->db_phpbb->Execute($sql);
-//could do a check here to see if Insert_ID() matches $user_id...
-
-
-// @TODO: MySQL5
 
         $sql = "INSERT INTO " . $this->phpBB['groups_table'] . " (group_name, group_description, group_single_user, group_moderator)
                 VALUES (0, 'Personal User', 1, 0)";
@@ -238,7 +254,7 @@ if (!defined('IS_ADMIN_FLAG')) {
     function phpbb_change_email($old_email, $email_address) {
     // before utilizing this function, we should do an MD5 password validation first
       if ($this->phpBB['installed'] != true || !zen_not_null($email_address) || $email_address == '') return false;
-        $sql = "update " . $this->phpBB['users_table'] . " set user_email='" . $email_address . "'
+        $sql = "update " . $this->phpBB['users_table'] . " set user_email='" . $email_address . "', user_email_hash = '" . crc32(strtolower($email_address)) . strlen($email_address) . "'
                 where user_email = '" . $old_email . "'";
         $phpbb_users = $this->db_phpbb->Execute($sql);
     }
@@ -246,10 +262,9 @@ if (!defined('IS_ADMIN_FLAG')) {
     function phpbb_change_nick($old_nick, $new_nick) {
     // before utilizing this function, we should do an MD5 password validation first
       if ($this->phpBB['installed'] != true || !zen_not_null($nick) || $nick == '') return false;
-        $sql = "update " . $this->phpBB['users_table'] . " set username='" . $new_nick . "'
+        $sql = "update " . $this->phpBB['users_table'] . " set username='" . $new_nick . "', username_clean = '" . $new_nick . "'
                 where username = '" . $old_nick . "'";
         $phpbb_users = $this->db_phpbb->Execute($sql);
     }
 
   }
-?>

@@ -1,24 +1,11 @@
 <?php
-//
-// +----------------------------------------------------------------------+
-// |zen-cart Open Source E-commerce                                       |
-// +----------------------------------------------------------------------+
-// | Copyright (c) 2003 The zen-cart developers                           |
-// |                                                                      |
-// | http://www.zen-cart.com/index.php                                    |
-// |                                                                      |
-// | Portions Copyright (c) 2003 osCommerce                               |
-// +----------------------------------------------------------------------+
-// | This source file is subject to version 2.0 of the GPL license,       |
-// | that is bundled with this package in the file LICENSE, and is        |
-// | available through the world-wide-web at the following url:           |
-// | http://www.zen-cart.com/license/2_0.txt.                             |
-// | If you did not receive a copy of the zen-cart license and are unable |
-// | to obtain it through the world-wide-web, please send a note to       |
-// | license@zen-cart.com so we can mail you a copy immediately.          |
-// +----------------------------------------------------------------------+
-//  $Id: whos_online.php 4003 2006-07-22 23:42:16Z drbyte $
-//
+/**
+ * @package admin
+ * @copyright Copyright 2003-2010 Zen Cart Development Team
+ * @copyright Portions Copyright 2003 osCommerce
+ * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
+ * @version $Id: whos_online.php 17070 2010-07-29 20:52:40Z drbyte $
+ */
 
 // highlight bots
 function zen_check_bot($checking) {
@@ -45,6 +32,7 @@ function zen_check_quantity($which) {
   // longer than 2 minutes light color
   $xx_mins_ago_long = (time() - WHOIS_TIMER_INACTIVE);
 
+  $chk_cart_status = base64_decode($which_query->fields['value']);
   switch (true) {
     case ($which_query->RecordCount() == 0):
     if ($who_query->fields['time_last_click'] < $xx_mins_ago_long) {
@@ -53,14 +41,14 @@ function zen_check_quantity($which) {
       return zen_image(DIR_WS_IMAGES . 'icon_status_red.gif');
     }
     break;
-    case (strstr($which_query->fields['value'],'"contents";a:0:')):
+    case (strstr($chk_cart_status,'"contents";a:0:')):
     if ($who_query->fields['time_last_click'] < $xx_mins_ago_long) {
       return zen_image(DIR_WS_IMAGES . 'icon_status_red_light.gif');
     } else {
       return zen_image(DIR_WS_IMAGES . 'icon_status_red.gif');
     }
     break;
-    case (!strstr($which_query->fields['value'],'"contents";a:0:')):
+    case (!strstr($chk_cart_status,'"contents";a:0:')):
     if ($who_query->fields['time_last_click'] < $xx_mins_ago_long) {
       return zen_image(DIR_WS_IMAGES . 'icon_status_yellow.gif');
     } else {
@@ -301,7 +289,7 @@ function zen_check_minutes($the_time_last_click) {
                     }
                   ?>
                 </td>
-                <td class="dataTableContentWhois" align="left"><a href="http://www.dnsstuff.com/tools/whois.ch?ip=<?php echo $whos_online->fields['ip_address']; ?>" target="new"><?php echo '<u>' . $whos_online->fields['ip_address'] . '</u>'; ?></a></td>
+                <td class="dataTableContentWhois" align="left"><a href="http://whois.domaintools.com/<?php echo $whos_online->fields['ip_address']; ?>" target="new"><?php echo '<u>' . $whos_online->fields['ip_address'] . '</u>'; ?></a></td>
                 <td class="dataTableContentWhois"><?php echo date('H:i:s', $whos_online->fields['time_entry']); ?></td>
                 <td class="dataTableContentWhois" align="center"><?php echo date('H:i:s', $whos_online->fields['time_last_click']); ?></td>
                 <td class="dataTableContentWhois" colspan="2">&nbsp;</td>
@@ -378,7 +366,8 @@ function zen_check_minutes($the_time_last_click) {
   $contents = array();
   if ($info) {
     $heading[] = array('text' => '<b>' . TABLE_HEADING_SHOPPING_CART . '</b>');
-
+    $tag = 0;
+    $session_data = '';
     if (STORE_SESSIONS == 'db') {
       $session_data = $db->Execute("select value from " . TABLE_SESSIONS . "
                                     WHERE sesskey = '" . $info . "'");
@@ -391,38 +380,30 @@ function zen_check_minutes($the_time_last_click) {
       }
     }
 
-    if ($length = strlen($session_data)) {
-      if (PHP_VERSION < 4) {
-        $start_id = strpos($session_data, 'customer_id[==]s');
-        $start_cart = strpos($session_data, 'cart[==]o');
-        $start_currency = strpos($session_data, 'currency[==]s');
-        $start_country = strpos($session_data, 'customer_country_id[==]s');
-        $start_zone = strpos($session_data, 'customer_zone_id[==]s');
-      } else {
-        $start_id = strpos($session_data, 'customer_id|s');
-        $start_cart = strpos($session_data, 'cart|O');
-        $start_currency = strpos($session_data, 'currency|s');
-        $start_country = strpos($session_data, 'customer_country_id|s');
-        $start_zone = strpos($session_data, 'customer_zone_id|s');
-      }
+    $hardenedStatus = FALSE;
+    $suhosinExtension = extension_loaded('suhosin');
+    $suhosinSetting = strtoupper(@ini_get('suhosin.session.encrypt'));
 
-      for ($i=$start_cart; $i<$length; $i++) {
-        if ($session_data[$i] == '{') {
-          if (isset($tag)) {
-            $tag++;
-          } else {
-            $tag = 1;
-          }
-        } elseif ($session_data[$i] == '}') {
-          $tag--;
-        } elseif ( (isset($tag)) && ($tag < 1) ) {
-          break;
-        }
-      }
+//    if (!$suhosinExtension) {
+      if (strpos($session_data, 'cart|O') == 0) $session_data = base64_decode($session_data);
+      if (strpos($session_data, 'cart|O') == 0) $session_data = '';
+//    }
+
+    // uncomment the following line if you have suhosin enabled and see errors on the cart-contents sidebar
+    //$hardenedStatus = ($suhosinExtension == TRUE || $suhosinSetting == 'On' || $suhosinSetting == 1) ? TRUE : FALSE;
+    if ($session_data != '' && $hardenedStatus == TRUE) $session_data = '';
+
+    if ($length = strlen($session_data)) {
+      $start_id = (int)strpos($session_data, 'customer_id|s');
+      $start_currency = (int)strpos($session_data, 'currency|s');
+      $start_country = (int)strpos($session_data, 'customer_country_id|s');
+      $start_zone = (int)strpos($session_data, 'customer_zone_id|s');
+      $start_cart = (int)strpos($session_data, 'cart|O');
+      $end_cart = (int)strpos($session_data, '|', $start_cart+6);
+      $end_cart = (int)strrpos(substr($session_data, 0, $end_cart), ';}');
 
       $session_data_id = substr($session_data, $start_id, (strpos($session_data, ';', $start_id) - $start_id + 1));
-// fix nnobo bug
-      $session_data_cart = substr($session_data, $start_cart, $i - $start_cart);
+      $session_data_cart = substr($session_data, $start_cart, ($end_cart - $start_cart+2));
       $session_data_currency = substr($session_data, $start_currency, (strpos($session_data, ';', $start_currency) - $start_currency + 1));
       $session_data_country = substr($session_data, $start_country, (strpos($session_data, ';', $start_country) - $start_country + 1));
       $session_data_zone = substr($session_data, $start_zone, (strpos($session_data, ';', $start_zone) - $start_zone + 1));
@@ -433,18 +414,11 @@ function zen_check_minutes($the_time_last_click) {
       session_decode($session_data_zone);
       session_decode($session_data_cart);
 
-      if (PHP_VERSION < 4) {
-        $broken_cart = $cart;
-        $cart = new shoppingCart;
-        $cart->unserialize($broken_cart);
-      }
-
       if (is_object($_SESSION['cart'])) {
         $contents[] = array('text' => $full_name . ' - ' . $ip_address . '<br />' . $info);
         $products = $_SESSION['cart']->get_products();
         for ($i = 0, $n = sizeof($products); $i < $n; $i++) {
           $contents[] = array('text' => $products[$i]['quantity'] . ' x ' . '<a href="' . zen_href_link(FILENAME_CATEGORIES, 'cPath=' . zen_get_product_path($products[$i]['id']) . '&pID=' . $products[$i]['id']) . '">' . $products[$i]['name'] . '</a>');
-// cPath=23&pID=74
         }
 
         if (sizeof($products) > 0) {

@@ -2,10 +2,10 @@
 /**
  * @package Installer
  * @access private
- * @copyright Copyright 2003-2007 Zen Cart Development Team
+ * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: header_php.php 7412 2007-11-11 05:47:50Z drbyte $
+ * @version $Id: header_php.php 16607 2010-06-03 12:37:20Z drbyte $
  */
 
 $write_config_files_only = ((isset($_POST['submit']) && $_POST['submit']==ONLY_UPDATE_CONFIG_FILES) || (isset($_POST['configfile']) && zen_not_null($_POST['configfile'])) || (isset($_GET['configfile']) && zen_not_null($_GET['configfile'])) || ZC_UPG_DEBUG3 != false) ? true : false;
@@ -69,6 +69,8 @@ $is_upgrade = (int)$zc_install->getConfigKey('is_upgrade');
 
   if ($is_upgrade) { // read previous settings from configure.php
     $zdb_type       = zen_read_config_value('DB_TYPE');
+    $zdb_coll       = zen_read_config_value('DB_CHARSET');
+    if ($zdb_coll != 'utf8') $zdb_coll = 'latin1';
     $zdb_prefix     = zen_read_config_value('DB_PREFIX');
     $zdb_server     = zen_read_config_value('DB_SERVER');
     $zdb_user       = zen_read_config_value('DB_SERVER_USERNAME');
@@ -80,6 +82,7 @@ $is_upgrade = (int)$zc_install->getConfigKey('is_upgrade');
     $zdb_sessions   = (zen_read_config_value('STORE_SESSIONS')) ? 'true' : 'false';
   } else { // set defaults:
     $zdb_type       = 'MySQL';
+    $zdb_coll       = 'latin1';
     $zdb_prefix     = '';
     $zdb_server     = 'localhost';
     $zdb_user       = 'root';
@@ -101,6 +104,7 @@ $is_upgrade = (int)$zc_install->getConfigKey('is_upgrade');
   if (!isset($_POST['db_sess']))     $_POST['db_sess']    = $zdb_sessions;
   if (!isset($_POST['db_prefix']))   $_POST['db_prefix']  = $zdb_prefix;
   if (!isset($_POST['db_type']))     $_POST['db_type']    = $zdb_type;
+  if (!isset($_POST['db_coll']))     $_POST['db_coll']    = $zdb_coll;
   if (!isset($_POST['cache_type']))  $_POST['cache_type'] = $zdb_cache_type;
 
   setInputValue($_POST['db_host'],    'DATABASE_HOST_VALUE', $zdb_server);

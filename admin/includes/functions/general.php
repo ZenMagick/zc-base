@@ -1,10 +1,10 @@
 <?php
 /**
  * @package admin
- * @copyright Copyright 2003-2007 Zen Cart Development Team
+ * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: general.php 14753 2009-11-07 19:58:13Z drbyte $
+ * @version $Id: general.php 17149 2010-08-04 16:49:35Z drbyte $
  */
 
 ////
@@ -19,12 +19,11 @@
     while (strstr($url, '&amp;')) $url = str_replace('&amp;', '&', $url);
 
     header('Location: ' . $url);
-
+    session_write_close();
     if (STORE_PAGE_PARSE_TIME == 'true') {
       if (!is_object($logger)) $logger = new logger;
       $logger->timer_stop();
     }
-
     exit;
   }
 
@@ -1069,15 +1068,39 @@
     }
 
     $db_query = $db->Execute("select now() as datetime");
-    list($system, $host, $kernel) = preg_split('/[\s,]+/', @exec('uname -a'), 5);
-    if ($host == '') list($system, $host, $kernel) = array('', $_SERVER['SERVER_NAME'], php_uname());
+
+    $errnum = 0;
+    $system = $host = $kernel = $output = '';
+    list($system, $host, $kernel) = array('', $_SERVER['SERVER_NAME'], php_uname());
+    $uptime = (DISPLAY_SERVER_UPTIME == 'true') ? 'Unsupported' : 'Disabled/Unavailable';
+
+    // check to see if "exec()" is disabled in PHP -- if not, get additional info via command line
+    $php_disabled_functions = '';
+    $exec_disabled = false;
+    $php_disabled_functions = @ini_get("disable_functions");
+    if ($php_disabled_functions != '') {
+      if (in_array('exec', preg_split('/,/', str_replace(' ', '', $php_disabled_functions)))) {
+        $exec_disabled = true;
+      }
+    }
+    if (!$exec_disabled) {
+      @exec('uname -a 2>&1', $output, $errnum);
+      if ($errnum == 0 && sizeof($output)) list($system, $host, $kernel) = preg_split('/[\s,]+/', $output[0], 5);
+      $output = '';
+      if (DISPLAY_SERVER_UPTIME == 'true') {
+        @exec('uptime 2>&1', $output, $errnum);
+        if ($errnum == 0) {
+          $uptime = $output[0];
+        }
+      }
+    }
 
     return array('date' => zen_datetime_short(date('Y-m-d H:i:s')),
                  'system' => $system,
                  'kernel' => $kernel,
                  'host' => $host,
                  'ip' => gethostbyname($host),
-                 'uptime' => (DISPLAY_SERVER_UPTIME == 'true' ? @exec('uptime 2>&1') : 'Unchecked'),
+                 'uptime' => $uptime,
                  'http_server' => $_SERVER['SERVER_SOFTWARE'],
                  'php' => PHP_VERSION,
                  'zend' => (function_exists('zend_version') ? zend_version() : ''),
@@ -1129,9 +1152,10 @@
                                 where c.categories_id = '" . (int)$id . "'
                                 and c.categories_id = cd.categories_id
                                 and cd.language_id = '" . (int)$_SESSION['languages_id'] . "'");
-
-      $categories_array[$index][] = array('id' => $id, 'text' => $category->fields['categories_name']);
-      if ( (zen_not_null($category->fields['parent_id'])) && ($category->fields['parent_id'] != '0') ) $categories_array = zen_generate_category_path($category->fields['parent_id'], 'category', $categories_array, $index);
+      if (!$category->EOF) {
+        $categories_array[$index][] = array('id' => $id, 'text' => $category->fields['categories_name']);
+        if ( (zen_not_null($category->fields['parent_id'])) && ($category->fields['parent_id'] != '0') ) $categories_array = zen_generate_category_path($category->fields['parent_id'], 'category', $categories_array, $index);
+      }
     }
 
     return $categories_array;
@@ -1172,7 +1196,134 @@
   }
 
   function zen_remove_category($category_id) {
+    if ((int)$category_id == 0) return;
     global $db;
+
+    // delete from salemaker - sale_categories_selected
+    $chk_sale_categories_selected = $db->Execute("select * from " . TABLE_SALEMAKER_SALES . "
+    WHERE
+    sale_categories_selected = '" . (int)$category_id . "'
+    OR sale_categories_selected LIKE '%," . (int)$category_id . ",%'
+    OR sale_categories_selected LIKE '%," . (int)$category_id . "'
+    OR sale_categories_selected LIKE '" . (int)$category_id . ",%'");
+
+    // delete from salemaker - sale_categories_all
+    $chk_sale_categories_all = $db->Execute("select * from " . TABLE_SALEMAKER_SALES . "
+    WHERE
+    sale_categories_all = '" . (int)$category_id . "'
+    OR sale_categories_all LIKE '%," . (int)$category_id . ",%'
+    OR sale_categories_all LIKE '%," . (int)$category_id . "'
+    OR sale_categories_all LIKE '" . (int)$category_id . ",%'");
+
+//echo 'WORKING ON: ' . (int)$category_id . ' chk_sale_categories_selected: ' . $chk_sale_categories_selected->RecordCount() . ' chk_sale_categories_all: ' . $chk_sale_categories_all->RecordCount() . '<br>';
+while (!$chk_sale_categories_selected->EOF) {
+  $skip_cats = false; // used when deleting
+  $skip_sale_id = 0;
+//echo '<br>FIRST LOOP: sale_id ' . $chk_sale_categories_selected->fields['sale_id'] . ' sale_categories_selected: ' . $chk_sale_categories_selected->fields['sale_categories_selected'] . '<br>';
+  // 9 or ,9 or 9,
+  // delete record if sale_categories_selected = 9 and  sale_categories_all = ,9,
+  if ($chk_sale_categories_selected->fields['sale_categories_selected'] == (int)$category_id and $chk_sale_categories_selected->fields['sale_categories_all'] == ',' . (int)$category_id . ',') { // delete record
+//echo 'A: I should delete this record sale_id: ' . $chk_sale_categories_selected->fields['sale_id'] . '<br><br>';
+    $skip_cats = true;
+    $skip_sale_id = $chk_sale_categories_selected->fields['sale_id'];
+    $salemakerdelete = "DELETE from " . TABLE_SALEMAKER_SALES . " WHERE sale_id='"  . $skip_sale_id . "'";
+  }
+
+  // if in the front - remove 9,
+  //  if ($chk_sale_categories_selected->fields['sale_categories_selected'] == (int)$category_id . ',') { // front
+  if (!$skip_cats && (preg_match('/^' . (int)$category_id . ',/', $chk_sale_categories_selected->fields['sale_categories_selected'])) ) { // front
+//echo 'B: I need to remove - ' . (int)$category_id . ', - from the front of ' . $chk_sale_categories_selected->fields['sale_categories_selected'] . '<br>';
+    $new_sale_categories_selected = substr($chk_sale_categories_selected->fields['sale_categories_selected'], strlen((int)$category_id . ','));
+//echo 'B: new_sale_categories_selected: ' . $new_sale_categories_selected . '<br><br>';
+  }
+
+  // if in the middle or end - remove ,9,
+  if (!$skip_cats && (strpos($chk_sale_categories_selected->fields['sale_categories_selected'], ',' . (int)$category_id . ',')) ) { // middle or end
+//echo 'C: I need to remove - ,' . (int)$category_id . ', - from the middle or end ' . $chk_sale_categories_selected->fields['sale_categories_selected'] . '<br>';
+    $start_cat = (int)strpos($chk_sale_categories_selected->fields['sale_categories_selected'], ',' . (int)$category_id . ',') + strlen(',' . (int)$category_id . ',');
+    $end_cat = (int)strpos($chk_sale_categories_selected->fields['sale_categories_selected'], ',' . (int)$category_id . ',', $start_cat+strlen(',' . (int)$category_id . ','));
+    $new_sale_categories_selected = substr($chk_sale_categories_selected->fields['sale_categories_selected'], 0, $start_cat - (strlen(',' . (int)$category_id . ',') - 1)) . substr($chk_sale_categories_selected->fields['sale_categories_selected'], $start_cat);
+//echo 'C: new_sale_categories_selected: ' . $new_sale_categories_selected. '<br><br>';
+    $skip_cat_last = true;
+  }
+
+
+// not needed in loop 1 if middle does end
+  // if on the end - remove ,9 skip if middle cleaned it
+  if (!$skip_cats && !$skip_cat_last && (strripos($chk_sale_categories_selected->fields['sale_categories_selected'], ',' . (int)$category_id)) ) { // end
+    $start_cat = (int)strpos($chk_sale_categories_selected->fields['sale_categories_selected'], ',' . (int)$category_id) + strlen(',' . (int)$category_id);
+//echo 'D: I need to remove - ,' . (int)$category_id . ' - from the end ' . $chk_sale_categories_selected->fields['sale_categories_selected'] . '<br>';
+    $new_sale_categories_selected = substr($chk_sale_categories_selected->fields['sale_categories_selected'], 0, $start_cat - (strlen(',' . (int)$category_id . ',') - 1));
+//echo 'D: new_sale_categories_selected: ' . $new_sale_categories_selected. '<br><br>';
+  }
+
+  if (!$skip_cats) {
+    $salemakerupdate =
+    "UPDATE " . TABLE_SALEMAKER_SALES . "
+    SET sale_categories_selected='" . $new_sale_categories_selected . "'
+    WHERE sale_id = '" . $chk_sale_categories_selected->fields['sale_id'] . "'";
+//echo 'Update new_sale_categories_selected: ' . $salemakerupdate . '<br>';
+    $db->Execute($salemakerupdate);
+  } else {
+//echo 'Record was deleted sale_id ' . $skip_sale_id . '<br>' . $salemakerdelete;
+    $db->Execute($salemakerdelete);
+  }
+
+  $chk_sale_categories_selected->MoveNext();
+}
+
+while (!$chk_sale_categories_all->EOF) {
+//echo '<br><br>SECOND LOOP: sale_id ' . $chk_sale_categories_all->fields['sale_id'] . ' sale_categories_all: ' . $chk_sale_categories_all->fields['sale_categories_all'] . '<br><br>';
+  // remove ,9 if on front as ,9, - remove ,9 if in the middle as ,9, - remove ,9 if on the end as ,9,
+  // beware of ,79, or ,98, or ,99, when cleaning 9
+  // if ($chk_sale_categories_all->fields['sale_categories_all'] == ',9') { // front
+  // if (something for the middle) { // middle
+  // if (right($chk_sale_categories_all->fields['sale_categories_all']) == ',9,') { // end
+
+  $skip_cats = false;
+  if ($skip_sale_id == $chk_sale_categories_all->fields['sale_id']) { // was deleted
+//echo 'A: I should delete this record sale_id: ' . $chk_sale_categories_all->fields['sale_id'] . ' but already done' . '<br><br>';
+    $skip_cats = true;
+  }
+
+  // if in the front - remove 9,
+  //  if ($chk_sale_categories_all->fields['sale_categories_all'] == (int)$category_id . ',') { // front
+  if (!$skip_cats && (preg_match('/^' . ',' . (int)$category_id . ',/', $chk_sale_categories_all->fields['sale_categories_all'])) ) { // front
+//echo 'B: I need to remove - ' . (int)$category_id . ', - from the front of ' . $chk_sale_categories_all->fields['sale_categories_all'] . '<br>';
+    $new_sale_categories_all = substr($chk_sale_categories_all->fields['sale_categories_all'], strlen(',' . (int)$category_id));
+//echo 'B: new_sale_categories_all: ' . $new_sale_categories_all . '<br><br>';
+  }
+
+  // if in the middle or end - remove ,9,
+  if (!$skip_cats && (strpos($chk_sale_categories_all->fields['sale_categories_all'], ',' . (int)$category_id . ',')) ) { // middle
+//echo 'C: I need to remove - ,' . (int)$category_id . ', - from the middle or end ' . $chk_sale_categories_all->fields['sale_categories_all'] . '<br>';
+    $start_cat = (int)strpos($chk_sale_categories_all->fields['sale_categories_all'], ',' . (int)$category_id . ',') + strlen(',' . (int)$category_id . ',');
+    $end_cat = (int)strpos($chk_sale_categories_all->fields['sale_categories_all'], ',' . (int)$category_id . ',', $start_cat+strlen(',' . (int)$category_id . ','));
+    $new_sale_categories_all = substr($chk_sale_categories_all->fields['sale_categories_all'], 0, $start_cat - (strlen(',' . (int)$category_id . ',') - 1)) . substr($chk_sale_categories_all->fields['sale_categories_all'], $start_cat);
+//echo 'C: new_sale_categories_all: ' . $new_sale_categories_all. '<br><br>';
+  }
+
+/*
+// not needed in loop 2
+  // if on the end - remove ,9,
+  if (!$skip_cats && (strripos($chk_sale_categories_all->fields['sale_categories_all'], ',' . (int)$category_id . ',')) ) { // end
+    $start_cat = (int)strpos($chk_sale_categories_all->fields['sale_categories_all'], ',' . (int)$category_id) + strlen(',' . (int)$category_id . ',');
+    echo 'D: I need to remove from the end - ,' . (int)$category_id . ', - from the end ' . $chk_sale_categories_all->fields['sale_categories_all'] . '<br>';
+    $new_sale_categories_all = substr($chk_sale_categories_all->fields['sale_categories_all'], 0, $start_cat - (strlen(',' . (int)$category_id . ',') - 1));
+    echo 'D: new_sale_categories_all: ' . $new_sale_categories_all. '<br><br>';
+  }
+*/
+      $salemakerupdate = "UPDATE " . TABLE_SALEMAKER_SALES . " SET sale_categories_all='" . $new_sale_categories_all . "' WHERE sale_id = '" . $chk_sale_categories_all->fields['sale_id'] . "'";
+
+//echo 'Update sale_categories_all: ' . $salemakerupdate . '<br>';
+
+      $db->Execute($salemakerupdate);
+
+      $chk_sale_categories_all->MoveNext();
+}
+
+//die('DONE TESTING');
+
     $category_image = $db->Execute("select categories_image
                                     from " . TABLE_CATEGORIES . "
                                     where categories_id = '" . (int)$category_id . "'");
@@ -1198,6 +1349,11 @@
 
     $db->Execute("delete from " . TABLE_METATAGS_CATEGORIES_DESCRIPTION . "
                   where categories_id = '" . (int)$category_id . "'");
+
+    $db->Execute("delete from " . TABLE_COUPON_RESTRICT . "
+                  where category_id = '" . (int)$category_id . "'");
+
+
   }
 
   function zen_remove_product($product_id, $ptc = 'true') {
@@ -1213,7 +1369,7 @@
     if ($duplicate_image->fields['total'] < 2 and $product_image->fields['products_image'] != '') {
       $products_image = $product_image->fields['products_image'];
       $products_image_extension = substr($products_image, strrpos($products_image, '.'));
-			$products_image_base = preg_replace('/'.$products_image_extension.'/', '', $products_image);
+			$products_image_base = preg_replace('/' . $products_image_extension . '/', '', $products_image);
 
       $filename_medium = 'medium/' . $products_image_base . IMAGE_SUFFIX_MEDIUM . $products_image_extension;
 			$filename_large = 'large/' . $products_image_base . IMAGE_SUFFIX_LARGE . $products_image_extension;
@@ -1275,6 +1431,9 @@
 
     $db->Execute("delete from " . TABLE_PRODUCTS_DISCOUNT_QUANTITY . "
                   where products_id = '" . (int)$product_id . "'");
+
+    $db->Execute("delete from " . TABLE_COUPON_RESTRICT . "
+                  where product_id = '" . (int)$product_id . "'");
 
   }
 
@@ -1462,13 +1621,10 @@
     return false;
   }
 
-////
-// Wrapper function for round()
-  function zen_round($number, $precision) {
-/// fix rounding error on GVs etc.
-    $number = round($number, $precision);
-
-    return $number;
+  function zen_round($value, $precision) {
+    $value =  round($value *pow(10,$precision),0);
+    $value = $value/pow(10,$precision);
+    return $value;
   }
 
 ////
@@ -1485,9 +1641,7 @@
 
 // Calculates Tax rounding the result
   function zen_calculate_tax($price, $tax) {
-    global $currencies;
-
-    return zen_round($price * $tax / 100, $currencies->currencies[DEFAULT_CURRENCY]['decimal_places']);
+    return $price * $tax / 100;
   }
 
 ////
@@ -1542,8 +1696,6 @@
   function zen_call_function($function, $parameter, $object = '') {
     if ($object == '') {
       return call_user_func($function, $parameter);
-    } elseif (PHP_VERSION < 4) {
-      return call_user_method($function, $object, $parameter);
     } else {
       return call_user_func(array($object, $function), $parameter);
     }
@@ -2084,7 +2236,7 @@ function zen_copy_products_attributes($products_id_from, $products_id_to) {
   function zen_delete_products_attributes($delete_product_id) {
     global $db;
     // delete associated downloads
-    $products_delete_from= $db->Execute("select pa.products_id, pad.products_attributes_id from " . TABLE_PRODUCTS_ATTRIBUTES . " pa, " . TABLE_PRODUCTS_ATTRIBUTES_DOWNLOAD . " pad  where pa.products_id='" . $delete_product_id . "' and pad.products_attributes_id= pa.products_attributes_id");
+    $products_delete_from = $db->Execute("select pa.products_id, pad.products_attributes_id from " . TABLE_PRODUCTS_ATTRIBUTES . " pa, " . TABLE_PRODUCTS_ATTRIBUTES_DOWNLOAD . " pad  where pa.products_id='" . $delete_product_id . "' and pad.products_attributes_id= pa.products_attributes_id");
     while (!$products_delete_from->EOF) {
       $db->Execute("delete from " . TABLE_PRODUCTS_ATTRIBUTES_DOWNLOAD . " where products_attributes_id = '" . $products_delete_from->fields['products_attributes_id'] . "'");
       $products_delete_from->MoveNext();
@@ -2234,11 +2386,12 @@ function zen_copy_products_attributes($products_id_from, $products_id_to) {
       if (is_numeric($domain_array[$domain_size-2]) && is_numeric($domain_array[$domain_size-1])) {
         return false;
       } else {
-        if ($domain_size > 3) {
-          return $domain_array[$domain_size-3] . '.' . $domain_array[$domain_size-2] . '.' . $domain_array[$domain_size-1];
-        } else {
-          return $domain_array[$domain_size-2] . '.' . $domain_array[$domain_size-1];
+        $tld = "";
+        foreach ($domain_array as $dPart)
+        {
+          if ($dPart != "www") $tld = $tld . "." . $dPart;
         }
+        return substr($tld, 1);
       }
     } else {
       return false;
@@ -2326,25 +2479,32 @@ function zen_copy_products_attributes($products_id_from, $products_id_to) {
     global $db;
     $cPath = '';
 
+/*
     $category_query = "select p2c.categories_id
                        from " . TABLE_PRODUCTS . " p, " . TABLE_PRODUCTS_TO_CATEGORIES . " p2c
                        where p.products_id = '" . (int)$products_id . "' " .
                        ($status_override == 1 ? " and p.products_status = 1 " : '') . "
                        and p.products_id = p2c.products_id limit 1";
+*/
+
+    $category_query = "select p.products_id, p.master_categories_id
+                       from " . TABLE_PRODUCTS . " p
+                       where p.products_id = '" . (int)$products_id . "' limit 1";
+
 
     $category = $db->Execute($category_query);
 
     if ($category->RecordCount() > 0) {
 
       $categories = array();
-      zen_get_parent_categories($categories, $category->fields['categories_id']);
+      zen_get_parent_categories($categories, $category->fields['master_categories_id']);
 
       $categories = array_reverse($categories);
 
       $cPath = implode('_', $categories);
 
       if (zen_not_null($cPath)) $cPath .= '_';
-      $cPath .= $category->fields['categories_id'];
+      $cPath .= $category->fields['master_categories_id'];
     }
 
     return $cPath;
@@ -2377,10 +2537,10 @@ function zen_copy_products_attributes($products_id_from, $products_id_to) {
   function zen_get_products_category_id($products_id) {
     global $db;
 
-    $the_products_category_query = "select products_id, categories_id from " . TABLE_PRODUCTS_TO_CATEGORIES . " where products_id = '" . $products_id . "'" . " order by products_id,categories_id";
+    $the_products_category_query = "select products_id, master_categories_id from " . TABLE_PRODUCTS . " where products_id = '" . (int)$products_id . "'";
     $the_products_category = $db->Execute($the_products_category_query);
 
-    return $the_products_category->fields['categories_id'];
+    return $the_products_category->fields['master_categories_id'];
   }
 
 
@@ -2626,8 +2786,9 @@ function zen_copy_products_attributes($products_id_from, $products_id_to) {
   function zen_get_categories_name_from_product($product_id) {
     global $db;
 
-    $check_products_category= $db->Execute("select products_id, categories_id from " . TABLE_PRODUCTS_TO_CATEGORIES . " where products_id='" . $product_id . "' limit 1");
-    $the_categories_name= $db->Execute("select categories_name from " . TABLE_CATEGORIES_DESCRIPTION . " where categories_id= '" . $check_products_category->fields['categories_id'] . "' and language_id= '" . $_SESSION['languages_id'] . "'");
+//    $check_products_category= $db->Execute("select products_id, categories_id from " . TABLE_PRODUCTS_TO_CATEGORIES . " where products_id='" . $product_id . "' limit 1");
+    $check_products_category = $db->Execute("select products_id, master_categories_id from " . TABLE_PRODUCTS . " where products_id = '" . (int)$product_id . "'");
+    $the_categories_name= $db->Execute("select categories_name from " . TABLE_CATEGORIES_DESCRIPTION . " where categories_id= '" . $check_products_category->fields['master_categories_id'] . "' and language_id= '" . $_SESSION['languages_id'] . "'");
 
     return $the_categories_name->fields['categories_name'];
   }
@@ -3253,15 +3414,29 @@ function zen_copy_products_attributes($products_id_from, $products_id_to) {
     $orders_comments_query = "SELECT osh.comments from " .
                               TABLE_ORDERS_STATUS_HISTORY . " osh
                               where osh.orders_id = '" . $orders_id . "'
-                              order by osh.date_added
+                              order by osh.orders_status_history_id
                               limit 1";
 
     $orders_comments = $db->Execute($orders_comments_query);
     return $orders_comments->fields['comments'];
   }
 
+// manufacturers name
+  function zen_get_products_manufacturers_name($product_id) {
+    global $db;
 
-	function zen_user_has_gv_balance($c_id) {
+    $product_query = "select m.manufacturers_name
+                      from " . TABLE_PRODUCTS . " p, " .
+                            TABLE_MANUFACTURERS . " m
+                      where p.products_id = '" . (int)$product_id . "'
+                      and p.manufacturers_id = m.manufacturers_id";
+
+    $product =$db->Execute($product_query);
+
+    return ($product->RecordCount() > 0) ? $product->fields['manufacturers_name'] : "";
+  }
+
+    function zen_user_has_gv_balance($c_id) {
       global $db;
         $gv_result = $db->Execute("select amount from " . TABLE_COUPON_GV_CUSTOMER . " where customer_id = '" . (int)$c_id . "'");
         if ($gv_result->RecordCount() > 0) {
@@ -3270,6 +3445,4 @@ function zen_copy_products_attributes($products_id_from, $products_id_to) {
           }
         }
         return 0;
-  }
-
-?>
+    }

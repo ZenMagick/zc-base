@@ -2,19 +2,20 @@
 /**
  * @package Installer
  * @access private
- * @copyright Copyright 2003-2007 Zen Cart Development Team
+ * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: store_configure.php 7011 2007-09-15 12:20:46Z drbyte $
+ * @version $Id: store_configure.php 16936 2010-07-20 17:20:01Z drbyte $
  */
 
 $file_contents =
 '<'.'?php' . "\n" .
 '/**' . "\n" .
-' * @package Configuration Settings circa 1.3.8' . "\n" .
-' * @copyright Copyright 2003-2007 Zen Cart Development Team' . "\n" .
+' * @package Configuration Settings circa 1.3.9' . "\n" .
+' * @copyright Copyright 2003-2010 Zen Cart Development Team' . "\n" .
 ' * @copyright Portions Copyright 2003 osCommerce' . "\n" .
 ' * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0' . "\n" .
+' * File Built by zc_install on ' . date('Y-m-d h:i:s') . "\n" .
 ' */' . "\n" .
 '' . "\n" .
 '' . "\n" .
@@ -41,7 +42,7 @@ $file_contents =
 '  define(\'DIR_WS_LANGUAGES\', DIR_WS_INCLUDES . \'languages/\');' . "\n" .
 '  define(\'DIR_WS_DOWNLOAD_PUBLIC\', DIR_WS_CATALOG . \'pub/\');' . "\n" .
 '  define(\'DIR_WS_TEMPLATES\', DIR_WS_INCLUDES . \'templates/\');' . "\n\n" .
-'  define(\'DIR_WS_PHPBB\', \'' . $this->getConfigKey('DIR_FS_PHPBB') . '/\');' . "\n\n" .
+'  define(\'DIR_WS_PHPBB\', \'' . '' . '/\');' . "\n\n" .
 '// * DIR_FS_* = Filesystem directories (local/physical)' . "\n" .
 '  //the following path is a COMPLETE path to your Zen Cart files. eg: /var/www/vhost/accountname/public_html/store/' . "\n" .
 '  define(\'DIR_FS_CATALOG\', \'' . $this->getConfigKey('DIR_FS_CATALOG') . '/\');' . "\n\n" .
@@ -69,4 +70,3 @@ $file_contents =
 '  define(\'DIR_FS_SQL_CACHE\', \'' . $this->getConfigKey('DIR_FS_SQL_CACHE') . '\');' . "\n\n" .
 //'?'.'>' .
 '// EOF';
-?>

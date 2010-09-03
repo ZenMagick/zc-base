@@ -3,10 +3,10 @@
  * index.php -- This is the main hub file for the Zen Cart installer
  * @package Installer
  * @access private
- * @copyright Copyright 2003-2007 Zen Cart Development Team
+ * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: index.php 7404 2007-11-11 04:09:50Z drbyte $
+ * @version $Id: index.php 16770 2010-06-23 17:06:15Z drbyte $
  */
 
   define('IS_ADMIN_FLAG',false);
@@ -29,6 +29,12 @@
         // $_REQUEST = array_merge($_REQUEST, $tmp);
       }
     }
+if (!isset($_GET) && isset($_SERVER["argc"]) && $_SERVER["argc"] > 1) {
+  for($i=1;$i<$_SERVER["argc"];$i++) {
+    list($key, $val) = explode('=', $_SERVER["argv"][$i]);
+    $_GET[$key] = $_REQUEST[$key] = $val;
+  }
+}
   }
 
   // init vars:
@@ -42,16 +48,7 @@
   require($language_page_directory . $current_page . '.php');
   require('includes/languages/' . $language . '.php');
 
-
-//  $zc_install->logDetails('$_POST = ' . print_r($_POST, true) . print_r($_SESSION, true), $current_page . '-index.php', 'testing_flow');
-//  $zc_install->logDetails($zc_install->getConfigKey('*', true), $current_page . '-index.php - before header_php', 'testing_flow');
-
-
   require($page_directory . '/header_php.php');
   require(DIR_WS_INSTALL_TEMPLATE . 'common/html_header.php');
-
-//  $zc_install->logDetails($zc_install->getConfigKey('*', true), $current_page . '-index.php - AFTER header_php', 'testing_flow');
-
   require(DIR_WS_INSTALL_TEMPLATE . 'common/main_template_vars.php');
   require(DIR_WS_INSTALL_TEMPLATE . 'common/tpl_main_page.php');
-?>

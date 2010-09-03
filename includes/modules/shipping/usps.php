@@ -4,10 +4,10 @@
  * RateV3 Updates to: January 4, 2010
  *
  * @package shippingMethod
- * @copyright Copyright 2003-2009 Zen Cart Development Team
+ * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: usps.php 15202 2010-01-09 21:31:35Z ajeh $
+ * @version $Id: usps.php 15881 2010-04-11 16:32:39Z wilt $
  */
 /**
  * USPS Shipping Module class
@@ -136,6 +136,7 @@ class usps extends base {
     $this->usps_countries = $this->usps_translation();
 
   }
+
   /**
    * Get quote from shipping provider's API:
    *
@@ -225,7 +226,7 @@ class usps extends base {
           'title' => ((isset($this->types[$type])) ? $this->types[$type] : $type),
           'cost' => ($cost + MODULE_SHIPPING_USPS_HANDLING) * $shipping_num_boxes);
           */
-          $cost = preg_replace('/[^0-9.]/s', '',  $cost);
+          $cost = preg_replace('/[^0-9.]/', '',  $cost);
           $methods[] = array('id' => $type,
                              'title' => $title,
                              'cost' => ($cost * $shipping_num_boxes) + (MODULE_SHIPPING_USPS_HANDLING_METHOD == 'Box' ? MODULE_SHIPPING_USPS_HANDLING * $shipping_num_boxes : MODULE_SHIPPING_USPS_HANDLING) );
@@ -343,6 +344,7 @@ class usps extends base {
   }
 
   /**
+
    * Set USPS package size
    *
    * @param integer $size
@@ -398,7 +400,8 @@ class usps extends base {
           }
           //PRIORITY MAIL OPTIONS
           if ($key == 'PRIORITY'){
-            $this->container = ''; // Blank, Flate Rate Envelope, or Flat Rate Box
+            $this->container = ''; // Blank, Flate Rate Envelope, or Flat Rate Box // Sm Flat Rate Box, Md Flat Rate Box and Lg Flat Rate Box
+
           }
           //EXPRESS MAIL OPTIONS
           if ($key == 'EXPRESS'){
@@ -519,7 +522,7 @@ class usps extends base {
 //    if ($order->delivery['country']['id'] == SHIPPING_ORIGIN_COUNTRY) {
     if ($order->delivery['country']['id'] == SHIPPING_ORIGIN_COUNTRY  || (SHIPPING_ORIGIN_COUNTRY == '223' && $this->usps_countries == 'US')) {
       if (sizeof($response) == '1') {
-        if (preg_match('/<Error>/is', $response[0])) {
+        if (preg_match('/<Error>/i', $response[0])) {
           $number = preg_match('/<Number>(.*)<\/Number>/msi', $response[0], $regs);
           $number = $regs[1];
           $description = preg_match('/<Description>(.*)<\/Description>/msi', $response[0], $regs);
@@ -534,18 +537,17 @@ class usps extends base {
         if (strpos($response[$i], '<Rate>')) {
           $service = preg_match('/<MailService>(.*)<\/MailService>/msi', $response[$i], $regs);
           $service = $regs[1];
-          if (preg_match('/Express/si', $service)) $service = 'EXPRESS';
-          if (preg_match('/Priority/si', $service)) $service = 'PRIORITY';
-          if (preg_match('/First-Class Mail/si', $service)) $service = 'FIRST CLASS';
-          if (preg_match('/Parcel/si', $service)) $service = 'PARCEL';
-          if (preg_match('/Media/si', $service)) $service = 'MEDIA';
-          if (preg_match('/Bound Printed/si', $service)) $service = 'BPM';
-          if (preg_match('/Library/si', $service)) $service = 'LIBRARY';
+          if (preg_match('/Express/i', $service)) $service = 'EXPRESS';
+          if (preg_match('/Priority/i', $service)) $service = 'PRIORITY';
+          if (preg_match('/First-Class Mail/i', $service)) $service = 'FIRST CLASS';
+          if (preg_match('/Parcel/i', $service)) $service = 'PARCEL';
+          if (preg_match('/Media/i', $service)) $service = 'MEDIA';
+          if (preg_match('/Bound Printed/i', $service)) $service = 'BPM';
+          if (preg_match('/Library/i', $service)) $service = 'LIBRARY';
           $postage = preg_match('/<Rate>(.*)<\/Rate>/msi', $response[$i], $regs);
           $postage = $regs[1];
 
           $rates[] = array($service => $postage);
-
           // BOF: UPS USPS
           if ($transit) {
             switch ($service) {
@@ -579,6 +581,8 @@ class usps extends base {
               break;
               case 'FIRST CLASS': $time = '2 - 5 ' . MODULE_SHIPPING_USPS_TEXT_DAYS;
               break;
+
+
               default:            $time = '';
               break;
             }
@@ -588,7 +592,7 @@ class usps extends base {
         }
       }
     } else {
-      if (preg_match('/<Error>/si', $response[0])) {
+      if (preg_match('/<Error>/i', $response[0])) {
         $number = preg_match('/<Number>(.*)<\/Number>/msi', $response[0], $regs);
         $number = $regs[1];
         $description = preg_match('/<Description>(.*)<\/Description>/msi', $response[0], $regs);
@@ -619,7 +623,7 @@ class usps extends base {
           if (strpos($services[$i], '<Postage>')) {
             $service = preg_match('/<SvcDescription>(.*)<\/SvcDescription>/msi', $services[$i], $regs);
             $service = $regs[1];
-            $postage = preg_match('/<Postage>(.*)<\/Postage>/si', $services[$i], $regs);
+            $postage = preg_match('/<Postage>(.*)<\/Postage>/i', $services[$i], $regs);
             $postage = $regs[1];
             // BOF: UPS USPS
             $time = preg_match('/<SvcCommitments>(.*)<\/SvcCommitments>/msi', $services[$i], $tregs);

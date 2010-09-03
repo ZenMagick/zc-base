@@ -2,12 +2,13 @@
 /**
  * @package Installer
  * @access private
- * @copyright Copyright 2003-2007 Zen Cart Development Team
+ * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: header_php.php 7176 2007-10-05 11:05:31Z drbyte $
+ * @version $Id: header_php.php 16592 2010-06-02 23:02:02Z drbyte $
  */
 
+  @define('SQL_CACHE_METHOD', 'none');
   $zc_install->error = false;
 
   if (!isset($_POST['store_name'])) $_POST['store_name'] = '';
@@ -37,7 +38,7 @@
       if ($_POST['demo_install'] == 'true') {
         $zc_install->dbDemoDataInstall();
       }
- 
+
       $zc_install->dbStoreSetup();
       // Close the database connection
       $zc_install->db->Close();
@@ -46,7 +47,7 @@
       exit;
     }
   }
-	
+
   require('../includes/classes/db/' . DB_TYPE . '/query_factory.php');
   $db = new queryFactory;
   $db->Connect(DB_SERVER, DB_SERVER_USERNAME, DB_SERVER_PASSWORD, DB_DATABASE) or die("Unable to connect to database");
@@ -63,6 +64,8 @@
   $sql = "select zone_id, zone_name from " . DB_PREFIX . "zones";  // order by zone_country_id, zone_name
   $zone = $db->Execute($sql);
   $zone_string = '';
+  $zone_string .= '<option value="-1"' . setSelected('-1', $_POST['store_zone']) . '>' . '-- Please Select --' . '</option>';
+  $zone_string .= '<option value="0"' . setSelected('0', $_POST['store_zone']) . '>' . '-None-' . '</option>';
   while (!$zone->EOF) {
     $zone_string .= '<option value="' . $zone->fields['zone_id'] . '"' . setSelected($zone->fields['zone_id'], $_POST['store_zone']) . '>' . $zone->fields['zone_name'] . '</option>';
     $zone->MoveNext();
@@ -95,4 +98,3 @@
 // this sets the first field to email address on login - setting in /common/tpl_main_page.php
   $zc_first_field= 'onload="document.getElementById(\'store_name\').focus()"';
 
-?>

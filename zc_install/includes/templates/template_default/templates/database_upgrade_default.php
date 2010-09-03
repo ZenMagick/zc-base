@@ -2,10 +2,10 @@
 /**
  * @package Installer
  * @access private
- * @copyright Copyright 2003-2007 Zen Cart Development Team
+ * @copyright Copyright 2003-2009 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: database_upgrade_default.php 7040 2007-09-18 05:54:25Z drbyte $
+ * @version $Id: database_upgrade_default.php 13791 2009-07-07 18:41:03Z drbyte $
  */
 
   if ($zc_install->error) include(DIR_WS_INSTALL_TEMPLATE . 'templates/display_errors.php');
@@ -123,6 +123,10 @@
       <div class="input">
       <input <?php if ($needs_v1_3_8) {echo "checked";} ?> name="version[]" type="checkbox" id="checkbox20" value="1.3.7" tabindex="20" />
       <label for="checkbox20">Upgrade DB from 1.3.7 to 1.3.8</label>
+    </div>
+      <div class="input">
+      <input <?php if ($needs_v1_3_9) {echo "checked";} ?> name="version[]" type="checkbox" id="checkbox21" value="1.3.8" tabindex="21" />
+      <label for="checkbox21">Upgrade DB from 1.3.8 to 1.3.9</label>
     </div>
     </fieldset>
     <br />

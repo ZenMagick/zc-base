@@ -1,8 +1,9 @@
 <?php
 /**
- * @package linkpoint_api_payment_module
+ * @package paymentMethod
+ * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @copyright Copyright 2003 LinkPoint International, Inc. All Rights Reserved.
- * @version (within Zen Cart SVN) $Id: class.linkpoint_api.php 7279 2007-10-24 21:48:38Z drbyte $
+ * @version (within Zen Cart SVN) $Id: class.linkpoint_api.php 15881 2010-04-11 16:32:39Z wilt $
  */
 /* lphp.php  LINKPOINT PHP MODULE */
 
@@ -191,8 +192,9 @@ class lphp
 // for logging purposes:
 		$this->sendData = "";
 		while (list($key, $value) = each($data)) {
-			if ($key != 'cardnumber' && $key != 'cvmvalue')	$this->sendData .= "$key = " . (is_array($value) ? print_r($value, true) : $value) . "\n";
+			if ($key != 'cardnumber' && $key != 'cvmvalue' && $key != 'keyfile')	$this->sendData .= "$key = " . (is_array($value) ? print_r($value, true) : $value) . "\n";
 			if ($key == 'cardnumber' || $key == 'cvmvalue')	$this->sendData .= "$key = ******\n";
+			if ($key == 'keyfile')	$this->sendData .= "$key = **specified**\n";
 		}
 
 		if (isset($data["xml"])) // if XML string is passed in, we'll use it

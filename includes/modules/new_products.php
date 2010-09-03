@@ -3,10 +3,10 @@
  * new_products.php module
  *
  * @package modules
- * @copyright Copyright 2003-2007 Zen Cart Development Team
+ * @copyright Copyright 2003-2008 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: new_products.php 6424 2007-05-31 05:59:21Z ajeh $
+ * @version $Id: new_products.php 8730 2008-06-28 01:31:22Z drbyte $
  */
 if (!defined('IS_ADMIN_FLAG')) {
   die('Illegal Access');
@@ -20,12 +20,12 @@ $new_products_query = '';
 $display_limit = zen_get_new_date_range();
 
 if ( (($manufacturers_id > 0 && $_GET['filter_id'] == 0) || $_GET['music_genre_id'] > 0 || $_GET['record_company_id'] > 0) || (!isset($new_products_category_id) || $new_products_category_id == '0') ) {
-   $new_products_query = "select distinct p.products_id, p.products_image, p.products_tax_class_id, pd.products_name,
-                                  p.products_date_added, p.products_price, p.products_type, p.master_categories_id
+  $new_products_query = "select distinct p.products_id, p.products_image, p.products_tax_class_id, pd.products_name,
+                                p.products_date_added, p.products_price, p.products_type, p.master_categories_id
                            from " . TABLE_PRODUCTS . " p, " . TABLE_PRODUCTS_DESCRIPTION . " pd
                            where p.products_id = pd.products_id
                            and pd.language_id = '" . (int)$_SESSION['languages_id'] . "'
-                           and p.products_status = 1";
+                           and   p.products_status = 1 " . $display_limit;
 } else {
   // get all products and cPaths in this subcat tree
   $productsInCategory = zen_get_categories_products_list( (($manufacturers_id > 0 && $_GET['filter_id'] > 0) ? zen_get_generated_category_path_rev($_GET['filter_id']) : $cPath), false, true, 0, $display_limit);
@@ -42,6 +42,7 @@ if ( (($manufacturers_id > 0 && $_GET['filter_id'] == 0) || $_GET['music_genre_i
                            from " . TABLE_PRODUCTS . " p, " . TABLE_PRODUCTS_DESCRIPTION . " pd
                            where p.products_id = pd.products_id
                            and pd.language_id = '" . (int)$_SESSION['languages_id'] . "'
+                           and p.products_status = 1
                            and p.products_id in (" . $list_of_products . ")";
   }
 }

@@ -1,10 +1,10 @@
-<?php 
+<?php
 /**
  * @package Installer
  * @access private
- * @copyright Copyright 2003-2007 Zen Cart Development Team
+ * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: installer_params.php 7417 2007-11-11 06:39:14Z drbyte $
+ * @version $Id: installer_params.php 16886 2010-07-09 16:26:42Z drbyte $
  */
 
 /**
@@ -15,6 +15,13 @@
   define('SESSION_WRITE_DIRECTORY', $session_save_path);
   define('DEBUG_LOG_FOLDER', realpath('../cache'));
 
-  define('STRICT_ERROR_REPORTING', false);
+  // Set the following to TRUE if having problems (blank pages, etc). Best to leave at FALSE for normal use.
+  define('STRICT_ERROR_REPORTING', FALSE);
 
-?>
+
+  // optionally set this to 'utf8':
+  define('DB_CHARSET', 'latin1');
+
+  // optionally uncomment the following line if choosing 'utf8' or 'latin1' above are causing problems:
+  // define('IGNORE_DB_CHARSET', TRUE);
+

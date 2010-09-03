@@ -4,7 +4,7 @@
  * @copyright Copyright 2003-2009 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: orders_download.php 14753 2009-11-07 19:58:13Z drbyte $
+ * @version $Id: orders_download.php 14139 2009-08-10 13:46:02Z wilt $
  */
 if (!defined('IS_ADMIN_FLAG')) {
   die('Illegal Access');
@@ -79,4 +79,3 @@ if (!defined('IS_ADMIN_FLAG')) {
     </tr>
 <?php
   } // only display if there are downloads to display
-?>

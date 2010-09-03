@@ -1,15 +1,16 @@
 <?php
 /**
  * @package admin
- * @copyright Copyright 2003-2008 Zen Cart Development Team
+ * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: english.php 7440 2007-11-17 21:51:35Z drbyte $
+ * @version $Id: english.php 15621 2010-03-06 10:01:29Z drbyte $
  */
 if (!defined('IS_ADMIN_FLAG'))
 {
   die('Illegal Access');
 }
+
 // added defines for header alt and text
 define('HEADER_ALT_TEXT', 'Admin Powered by Zen Cart :: The Art of E-Commerce');
 define('HEADER_LOGO_WIDTH', '200px');
@@ -51,7 +52,6 @@ function zen_date_raw($date, $reverse = false) {
     $template_dir_select = '';
   }
   require(DIR_FS_CATALOG_LANGUAGES . $_SESSION['language'] . '/' . $template_dir_select . 'meta_tags.php');
-//die(DIR_FS_CATALOG_LANGUAGES . $_SESSION['language'] . '/' . $template_dir_select . 'meta_tags.php');
 
 // meta tags
 define('ICON_METATAGS_ON', 'Meta Tags Defined');
@@ -677,4 +677,3 @@ define('ENTRY_NOTHING_TO_SEND','You haven\'t entered any content for your messag
   include(zen_get_file_directory(DIR_FS_CATALOG_LANGUAGES . $_SESSION['language'] . '/', FILENAME_OTHER_IMAGES_NAMES, 'false'));
 
 
-?>

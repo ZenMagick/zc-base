@@ -3,10 +3,10 @@
  * functions_taxes
  *
  * @package functions
- * @copyright Copyright 2003-2006 Zen Cart Development Team
+ * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: functions_taxes.php 6789 2007-08-24 15:46:37Z drbyte $
+ * @version $Id: functions_taxes.php 16190 2010-05-03 20:18:57Z wilt $
  */
 
 ////
@@ -154,29 +154,23 @@
     }
     return $rates_array;
   }
-
 ////
 // Add tax to a products price based on whether we are displaying tax "in" the price
   function zen_add_tax($price, $tax) {
     global $currencies;
 
     if ( (DISPLAY_PRICE_WITH_TAX == 'true') && ($tax > 0) ) {
-      return zen_round($price, $currencies->currencies[DEFAULT_CURRENCY]['decimal_places']) + zen_calculate_tax($price, $tax);
+      return $price + zen_calculate_tax($price, $tax);
     } else {
-      return zen_round($price, $currencies->currencies[DEFAULT_CURRENCY]['decimal_places']);
+      return $price;
     }
   }
 
-// Calculates Tax rounding the result
+ // Calculates Tax rounding the result
   function zen_calculate_tax($price, $tax) {
     global $currencies;
-//    $result = bcmul($price, $tax, $currencies->currencies[DEFAULT_CURRENCY]['decimal_places']);
-//    $result = bcdiv($result, 100, $currencies->currencies[DEFAULT_CURRENCY]['decimal_places']);
-//    return $result;
-    return zen_round($price * $tax / 100, $currencies->currencies[DEFAULT_CURRENCY]['decimal_places']);
+    return $price * $tax / 100;
   }
-
-
 ////
 // Output the tax percentage with optional padded decimals
   function zen_display_tax_value($value, $padding = TAX_DECIMAL_PLACES) {
@@ -276,4 +270,36 @@
      $tax_address['country_id'] = $tax_address_result->fields['entry_country_id'];
      return $tax_address;
  }
-?>
+ function zen_get_all_tax_descriptions($country_id = -1, $zone_id = -1) 
+ {
+   global $db;
+    if ( ($country_id == -1) && ($zone_id == -1) ) {
+      if (isset($_SESSION['customer_id'])) {
+        $country_id = $_SESSION['customer_country_id'];
+        $zone_id = $_SESSION['customer_zone_id'];
+      } else {
+        $country_id = STORE_COUNTRY;
+        $zone_id = STORE_ZONE;
+      }
+    }
+    
+   $sql = "select tr.* 
+           from (" . TABLE_TAX_RATES . " tr
+           left join " . TABLE_ZONES_TO_GEO_ZONES . " za on (tr.tax_zone_id = za.geo_zone_id)
+           left join " . TABLE_GEO_ZONES . " tz on (tz.geo_zone_id = tr.tax_zone_id) )
+           where (za.zone_country_id is null
+           or za.zone_country_id = 0
+           or za.zone_country_id = '" . (int)$country_id . "')
+           and (za.zone_id is null
+           or za.zone_id = 0
+           or za.zone_id = '" . (int)$zone_id . "')";
+   $result = $db->Execute($sql);
+   $taxDescriptions =array();
+   while (!$result->EOF)
+   {
+     $taxDescriptions[] = $result->fields['tax_description'];
+     $result->moveNext();
+   }
+   return $taxDescriptions;
+ }
+ 

@@ -4,10 +4,10 @@
  * Lookup Functions for various Zen Cart activities such as countries, prices, products, product types, etc
  *
  * @package functions
- * @copyright Copyright 2003-2007 Zen Cart Development Team
+ * @copyright Copyright 2003-2009 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: functions_lookups.php 6485 2007-06-12 06:46:08Z ajeh $
+ * @version $Id: functions_lookups.php 14141 2009-08-10 19:34:47Z wilt $
  */
 
 
@@ -312,6 +312,7 @@
     return $the_products_category->fields['master_categories_id'];
   }
 
+
 /*
  * Return category's image
  * TABLES: categories
@@ -409,11 +410,12 @@
  *  return attributes products_options_sort_order
  *  TABLES: PRODUCTS_OPTIONS, PRODUCTS_ATTRIBUTES
  */
-  function zen_get_attributes_options_sort_order($products_id, $options_id, $options_values_id) {
+  function zen_get_attributes_options_sort_order($products_id, $options_id, $options_values_id, $lang_num = '') {
     global $db;
+      if ($lang_num == '') $lang_num = (int)$_SESSION['languages_id'];
       $check = $db->Execute("select products_options_sort_order
                              from " . TABLE_PRODUCTS_OPTIONS . "
-                             where products_options_id = '" . (int)$options_id . "' limit 1");
+                             where products_options_id = '" . (int)$options_id . "' and language_id = '" . $lang_num . "' limit 1");
 
       $check_options_id = $db->Execute("select products_id, options_id, options_values_id, products_options_sort_order
                              from " . TABLE_PRODUCTS_ATTRIBUTES . "
@@ -443,7 +445,7 @@
 
 // text required validation
     if (preg_match('/^txt_/', $option)) {
-      $check_attributes = $db->Execute("select attributes_display_only, attributes_required from " . TABLE_PRODUCTS_ATTRIBUTES . " where products_id='" . (int)$product_id . "' and options_id='" . (int)str_replace('txt_', '', $option) . "' and options_values_id='0'");
+      $check_attributes = $db->Execute("select attributes_display_only, attributes_required from " . TABLE_PRODUCTS_ATTRIBUTES . " where products_id='" . (int)$product_id . "' and options_id='" . (int)preg_replace('/txt_/', '', $option) . "' and options_values_id='0'");
 // text cannot be blank
       if ($check_attributes->fields['attributes_required'] == '1' and empty($value)) {
         $check_valid = false;
@@ -571,18 +573,18 @@
     return $cc_check_accepted;
   }
 
-/*
- * Return Category Name from product ID
- * TABLES: categories_name
- */
+////
+// TABLES: categories_name from products_id
   function zen_get_categories_name_from_product($product_id) {
     global $db;
 
-    $check_products_category= $db->Execute("select products_id, categories_id from " . TABLE_PRODUCTS_TO_CATEGORIES . " where products_id='" . (int)$product_id . "' limit 1");
-    $the_categories_name= $db->Execute("select categories_name from " . TABLE_CATEGORIES_DESCRIPTION . " where categories_id= '" . (int)$check_products_category->fields['categories_id'] . "' and language_id= '" . (int)$_SESSION['languages_id'] . "'");
+//    $check_products_category= $db->Execute("select products_id, categories_id from " . TABLE_PRODUCTS_TO_CATEGORIES . " where products_id='" . $product_id . "' limit 1");
+    $check_products_category = $db->Execute("select products_id, master_categories_id from " . TABLE_PRODUCTS . " where products_id = '" . (int)$product_id . "'");
+    $the_categories_name= $db->Execute("select categories_name from " . TABLE_CATEGORIES_DESCRIPTION . " where categories_id= '" . $check_products_category->fields['master_categories_id'] . "' and language_id= '" . $_SESSION['languages_id'] . "'");
 
     return $the_categories_name->fields['categories_name'];
   }
+
 
 /*
  * configuration key value lookup in TABLE_PRODUCT_TYPE_LAYOUT

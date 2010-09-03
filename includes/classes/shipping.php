@@ -3,10 +3,10 @@
  * shipping class
  *
  * @package classes
- * @copyright Copyright 2003-2007 Zen Cart Development Team
+ * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: shipping.php 6276 2007-05-02 11:50:10Z drbyte $
+ * @version $Id: shipping.php 15880 2010-04-11 16:24:30Z wilt $
  */
 if (!defined('IS_ADMIN_FLAG')) {
   die('Illegal Access');
@@ -45,15 +45,19 @@ class shipping extends base {
         if (@file_exists($lang_file)) {
           include_once($lang_file);
         } else {
-          if (IS_ADMIN_FLAG === false) {
-            $messageStack->add(WARNING_COULD_NOT_LOCATE_LANG_FILE . $lang_file, 'caution');
+          if (IS_ADMIN_FLAG === false && is_object($messageStack)) {
+            $messageStack->add('checkout_shipping', WARNING_COULD_NOT_LOCATE_LANG_FILE . $lang_file, 'caution');
           } else {
             $messageStack->add_session(WARNING_COULD_NOT_LOCATE_LANG_FILE . $lang_file, 'caution');
           }
         }
-        include_once(DIR_WS_MODULES . 'shipping/' . $include_modules[$i]['file']);
-
-        $GLOBALS[$include_modules[$i]['class']] = new $include_modules[$i]['class'];
+        $this->enabled = TRUE;
+        $this->notify('NOTIFY_SHIPPING_MODULE_ENABLE', $include_modules[$i]['class']);
+        if ($this->enabled)
+        {
+          include_once(DIR_WS_MODULES . 'shipping/' . $include_modules[$i]['file']);
+          $GLOBALS[$include_modules[$i]['class']] = new $include_modules[$i]['class'];
+        }
       }
     }
   }
@@ -98,10 +102,13 @@ class shipping extends base {
       }
 
       if ($shipping_weight > SHIPPING_MAX_WEIGHT) { // Split into many boxes
-        $shipping_num_boxes = ceil($shipping_weight/SHIPPING_MAX_WEIGHT);
+//        $shipping_num_boxes = ceil($shipping_weight/SHIPPING_MAX_WEIGHT);
+        $zc_boxes = zen_round(($shipping_weight/SHIPPING_MAX_WEIGHT), 2);
+        $shipping_num_boxes = ceil($zc_boxes);
         $shipping_weight = $shipping_weight/$shipping_num_boxes;
       }
     }
+    $this->notify('NOTIFY_SHIPPING_MODULE_CALCULATE_BOXES_AND_TARE');
   }
 
   function quote($method = '', $module = '', $calc_boxes_weight_tare = true) {
@@ -130,7 +137,7 @@ class shipping extends base {
         if (is_array($quotes)) $quotes_array[] = $quotes;
       }
     }
-
+    $this->notify('NOTIFY_SHIPPING_MODULE_GET_ALL_QUOTES', $quotes_array);
     return $quotes_array;
   }
 
@@ -171,9 +178,8 @@ class shipping extends base {
           }
         }
       }
-
+      $this->notify('NOTIFY_SHIPPING_MODULE_CALCULATE_CHEAPEST', $cheapest);
       return $cheapest;
     }
   }
 }
-?>

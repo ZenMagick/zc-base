@@ -1,6 +1,6 @@
 # MySQL file for Zen Cart Demo Products load
 #
-# $Id: mysql_demo.sql 6409 2007-05-30 14:30:28Z ajeh $
+# $Id: mysql_demo.sql 14152 2009-08-11 20:11:44Z wilt $
 #
 
 # Configuration Settings:
@@ -146,7 +146,7 @@ INSERT INTO categories_description (categories_id, language_id, categories_name,
 # Dumping data for table `customers`
 #
 
-INSERT INTO customers (customers_id, customers_gender, customers_firstname, customers_lastname, customers_dob, customers_email_address, customers_nick, customers_default_address_id, customers_telephone, customers_fax, customers_password, customers_newsletter, customers_group_pricing, customers_email_format, customers_authorization, customers_referral) VALUES (NULL, 'm', 'Bill', 'Smith', '2001-01-01 00:00:00', 'root@localhost', '', 1, '12345', '', 'd95e8fa7f20a009372eb3477473fcd34:1c', '0', 0, 'TEXT', 0, '');
+INSERT INTO customers (customers_id, customers_gender, customers_firstname, customers_lastname, customers_dob, customers_email_address, customers_nick, customers_default_address_id, customers_telephone, customers_fax, customers_password, customers_newsletter, customers_group_pricing, customers_email_format, customers_authorization, customers_referral) VALUES (NULL, 'm', 'Bill', 'Smith', '2001-01-01 00:00:00', 'root@localhost.com', '', 1, '12345', '', 'd95e8fa7f20a009372eb3477473fcd34:1c', '0', 0, 'TEXT', 0, '');
 
 #
 # Dumping data for table `customers_info`

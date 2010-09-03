@@ -1,10 +1,10 @@
 /**
  * @package Installer
  * @access private
- * @copyright Copyright 2003-2007 Zen Cart Development Team
+ * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: stylesheet.css 7039 2007-09-18 03:51:51Z drbyte $
+ * @version $Id: stylesheet.css 16936 2010-07-20 17:20:01Z drbyte $
  */
 
 body {
@@ -110,20 +110,12 @@ body#systemsetup li#welcome,
 body#systemsetup li#licenseaccept,
 body#systemsetup li#inpection,
 body#systemsetup li#system,
-body#systemsetup li#phpbb,
-
-body#phpbbsetup li#welcome,
-body#phpbbsetup li#license,
-body#phpbbsetup li#inpection,
-body#phpbbsetup li#system,
-body#phpbbsetup li#phpbb,
-body#phpbbsetup li#database,
+body#systemsetup li#database,
 
 body#storesetup li#welcome,
 body#storesetup li#licenseaccept,
 body#storesetup li#inpection,
 body#storesetup li#system,
-body#storesetup li#phpbb,
 body#storesetup li#database,
 body#storesetup li#databaseupg,
 
@@ -131,7 +123,6 @@ body#adminsetup li#welcome,
 body#adminsetup li#licenseaccept,
 body#adminsetup li#inpection,
 body#adminsetup li#system,
-body#adminsetup li#phpbb,
 body#adminsetup li#database,
 body#adminsetup li#databaseupg,
 body#adminsetup li#store,
@@ -140,7 +131,6 @@ body#finished li#welcome,
 body#finished li#licenseaccept,
 body#finished li#inpection,
 body#finished li#system,
-body#finished li#phpbb, 
 body#finished li#database,
 body#finished li#databaseupg,
 body#finished li#store,
@@ -155,7 +145,6 @@ body#databaseupgrade li#databaseupg,
 body#configcheckup li#cfgcheck,
 body#storesetup li#store,
 body#adminsetup li#admin,
-body#phpbbsetup li#phpbb,
 body#finished li#finish {
 	font-weight: bold;  background-color: #ceddf0;
 }

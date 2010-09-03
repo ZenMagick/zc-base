@@ -3,10 +3,10 @@
  * upcoming_products module
  *
  * @package modules
- * @copyright Copyright 2003-2007 Zen Cart Development Team
+ * @copyright Copyright 2003-2008 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: upcoming_products.php 6424 2007-05-31 05:59:21Z ajeh $
+ * @version $Id: upcoming_products.php 8730 2008-06-28 01:31:22Z drbyte $
  */
 if (!defined('IS_ADMIN_FLAG')) {
   die('Illegal Access');
@@ -23,12 +23,12 @@ $limit_clause = "  order by " . EXPECTED_PRODUCTS_FIELD . " " . EXPECTED_PRODUCT
 
 if ( (($manufacturers_id > 0 && $_GET['filter_id'] == 0) || $_GET['music_genre_id'] > 0 || $_GET['record_company_id'] > 0) || (!isset($new_products_category_id) || $new_products_category_id == '0') ) {
   $expected_query = "select p.products_id, pd.products_name, products_date_available as date_expected, p.master_categories_id
-                       from " . TABLE_PRODUCTS . " p, " . TABLE_PRODUCTS_DESCRIPTION . " pd
-                       where p.products_id = pd.products_id
-                       and p.products_status = 1
-                       and pd.language_id = '" . (int)$_SESSION['languages_id'] . "' " .
-                       $display_limit .
-                       $limit_clause; 
+                     from " . TABLE_PRODUCTS . " p, " . TABLE_PRODUCTS_DESCRIPTION . " pd
+                     where p.products_id = pd.products_id
+                     and p.products_status = 1
+                     and pd.language_id = '" . (int)$_SESSION['languages_id'] . "'" .
+                     $display_limit .
+                     $limit_clause;
 } else {
   // get all products and cPaths in this subcat tree
   $productsInCategory = zen_get_categories_products_list( (($manufacturers_id > 0 && $_GET['filter_id'] > 0) ? zen_get_generated_category_path_rev($_GET['filter_id']) : $cPath), false, true, 0, $display_limit);
@@ -43,11 +43,11 @@ if ( (($manufacturers_id > 0 && $_GET['filter_id'] == 0) || $_GET['music_genre_i
     $expected_query = "select p.products_id, pd.products_name, products_date_available as date_expected, p.master_categories_id
                        from " . TABLE_PRODUCTS . " p, " . TABLE_PRODUCTS_DESCRIPTION . " pd
                        where p.products_id = pd.products_id
-                       and p.products_status = 1
                        and p.products_id in (" . $list_of_products . ")
+                       and p.products_status = 1
                        and pd.language_id = '" . (int)$_SESSION['languages_id'] . "' " .
                        $display_limit .
-                       $limit_clause;  
+                       $limit_clause;
   }
 }
 

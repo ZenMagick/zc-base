@@ -2,10 +2,10 @@
 /**
  * @package Installer
  * @access private
- * @copyright Copyright 2003-2007 Zen Cart Development Team
+ * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: database_setup.php 7411 2007-11-11 05:47:10Z drbyte $
+ * @version $Id: database_setup.php 16607 2010-06-03 12:37:20Z drbyte $
  */
 /**
  * defining language components for the page
@@ -18,6 +18,8 @@
   define('DATABASE_OPTIONAL_INSTRUCTION', 'It is recommended to leave these settings as-is unless you have a specific reason for altering them.');
   define('DATABASE_TYPE', 'Database Type');
   define('DATABASE_TYPE_INSTRUCTION', 'Choose the database type to be used.');
+  define('DATABASE_CHARSET', 'Database Character Set / Collation');
+  define('DATABASE_CHARSET_INSTRUCTION', 'Choose the database collation to be used.');
   define('DATABASE_HOST', 'Database Host');
   define('DATABASE_HOST_INSTRUCTION', 'What is the database host?  The database host can be in the form of a host name, such as \'db1.myserver.com\', or as an IP-address, such as \'192.168.0.1\'.');
   define('DATABASE_USERNAME', 'Database Username');

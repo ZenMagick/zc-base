@@ -3,17 +3,17 @@
  * split_page_results Class.
  *
  * @package classes
- * @copyright Copyright 2003-2006 Zen Cart Development Team
+ * @copyright Copyright 2003-2009 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: split_page_results.php 3041 2006-02-15 21:56:45Z wilt $
+ * @version $Id: split_page_results.php 17066 2010-07-29 19:18:14Z wilt $
  */
 if (!defined('IS_ADMIN_FLAG')) {
   die('Illegal Access');
 }
 /**
  * Split Page Result Class
- * 
+ *
  * An sql paging class, that allows for sql reslt to be shown over a number of pages using  simple navigation system
  * Overhaul scheduled for subsequent release
  *
@@ -25,8 +25,9 @@ class splitPageResults extends base {
   /* class constructor */
   function splitPageResults($query, $max_rows, $count_key = '*', $page_holder = 'page', $debug = false) {
     global $db;
-		$max_rows = ($max_rows == '' || $max_rows == 0) ? 20 : $max_rows;
-    $this->sql_query = $query;
+    $max_rows = ($max_rows == '' || $max_rows == 0) ? 20 : $max_rows;
+
+    $this->sql_query = preg_replace("/\n\r|\r\n|\n|\r/", " ", $query);
     $this->page_name = $page_holder;
 
     if ($debug) {

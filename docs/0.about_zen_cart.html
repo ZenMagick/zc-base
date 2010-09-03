@@ -1,12 +1,14 @@
 <!--
 /**
  * @package documentation
- * @copyright Copyright 2003-2006 Zen Cart Development Team
+ * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: 0.about_zen_cart.html 3782 2006-06-16 06:00:34Z drbyte $
+ * @version $Id: 0.about_zen_cart.html 16960 2010-07-22 16:55:07Z drbyte $
  */
 //-->
 <html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <style type="text/css">
 <!--
 body, table{ font-family:Verdana, Arial, Helvetica, sans-serif; font-size:14px; }
@@ -25,11 +27,11 @@ h1 { color: #ffffff;    border:1px solid #aca893;   background-color: #5778ce;  
 h2 { color: #c96e29; 	font-size: 18px;}
 h3 { color: #5778ce;	font-size: 16px; margin-bottom:0px;}
 h4 { color: #c96e29;	font-size: 14px;}
-
-
 -->
 </style>
-<title>Installing Zen Cart(tm)</title><body>
+<title>Installing Zen Cart(tm)</title>
+</head>
+<body>
 
 <table class="intro" cellspacing="4" cellpadding="6" border="3" width="748px" align="center">
 <tr><td class="intro">
@@ -102,8 +104,11 @@ One of the secrets behind its power lies in our robust template system that "abs
 <br />
 <H3>For Developers and Hosting Providers</H3>
 Developers are able to deploy cutting edge solutions based on Zen Cart&trade;'s modern standards and technologies. Combining PHP server-side technology with the ability to choose from multiple databases on the back end, results in flexible software that you can customize and modify to suit your needs. <br />
-Minimum/suggested server requirements: <br />
-PHP 4.3.2 or higher, Apache 1.3.x and MySQL 3.23.x or higher.
+MINIMUM server requirements: <br />
+PHP 4.3.2 or higher, Apache 1.3.30 and MySQL 3.23 or higher.<br /><br />
+<strong>RECOMMENDED server capabilities:<br />
+PHP 5.3.2 or higher, Apache 2.2 or higher, and MySQL 4.1 or higher.</strong>
+<p>While Zen Cart can run on Windows/IIS servers, Linux/Apache servers are recommended for best results.</p>
 <br />
 </div>
 <div>
@@ -134,6 +139,7 @@ It is, after all, about commerce.
 <LI>Secure -- no one but your administrative personnel can access your customer/catalog data
 <LI>Easy to install -- our helpful installation program guides you easily through the setup process 
 <LI>User frontend is validated to XHTML 1.0 Transitional<LI>Advanced Template System using stylesheets and images 
+<LI>For the Designer... simple customization via Stylesheets
 <LI>Any PHP coding changes can be protected during upgrades by using the built-in override protection system
 <LI>Switching from one installed template to another is as simple as a couple of clicks in the Admin
 <LI>Merchandise Pricing options -- Single and Multiple items can be put on Sale. Sale options include Percentage-off, Fixed Amount off, New Price, etc. Sales can include or exclude product attributes. You can add or exclude a discount from a Special. You can put a whole category or the entire store on sale!
@@ -146,7 +152,7 @@ It is, after all, about commerce.
 <LI>One-Time Fees can be added to products via attributes
 <LI>Attributes also support Text Pricing, such as price-per-word or price-per-letter for personalizing
 <LI>Attributes can show image/color swatches 
-<LI> Store layout can be controlled in great detail simply by switching settings in the Admin area. Choose your side column and box widths, Bread Crumb Separator, which Sideboxes you want to appear where on the page, enable/disable links in various places.
+<LI>Store layout can be controlled in great detail simply by switching settings in the Admin area. Choose your side column and box widths, Bread Crumb Separator, which Sideboxes you want to appear where on the page, enable/disable links in various places.
 <LI>Entire categories of products (or individual products) can be enabled/disabled with just a few clicks
 <LI>Sort order of products is easily controlled in the admin area 
 <LI>Integrate with phpBB so that your support forum login passwords match your Zen Cart shop.
@@ -166,30 +172,32 @@ It is, after all, about commerce.
 <LI>Automatic detection of search engine spiders
 <LI>Intelligent generation of metatags content for search engines
 <LI>Easily upgrade from one version to the next. Upgrade Detection notifies administrators of new versions at login.
-<LI>Built in WYSIWYG page editor for modifying non database pages. (version 2.0) 
+<LI>Built in WYSIWYG page editor for modifying non database pages. 
 <LI>Tight security on password handling, login/logout, and more.
 <LI>HTML-style email supported
 <LI>Email can be sent via sendmail, smtp, or smtp-with-authorization
 <LI>Email archiving supported for audit trail
-<LI>Administrative activity logging enabled for audit trail -- especially beneficial with recent Merchant Agreement requirements concerning tracking of activity related to accessing customer information. 
-<LI> Advertising Banners -- show information about your business colleagues and track banner link activity. Banners open in new windows so that customers never really leave your site.
-<LI> Shipping Estimator allows your customer to get an idea of their shipping costs prior to checkout
+<LI>Administrative activity logging enabled for audit trail -- especially beneficial with PCI Merchant Agreement requirements concerning tracking of activity related to accessing customer information. 
+<LI>Advertising Banners -- show information about your business colleagues and track banner link activity. Banners open in new windows so that customers never really leave your site.
+<LI>Shipping Estimator allows your customer to get an idea of their shipping costs prior to checkout
 <LI>Coupons and Gift Certificates are easily handled both by customers and administrators
 <LI>Customer &quot;Group Pricing&quot; allows groups of users to receive a set discount amount at checkout
-<LI> Newsletter system and Product Notification system
+<LI>Newsletter system and Product Notification system
 <LI>Low-Order Fees can be configured
 <LI>COD Fees can be added
 <LI>Shipping Tare, Large-Package handling to give fine-grain control over shipping services
 <LI>Tax rates, tax zones, etc easily configured in the admin area 
-<LI>PayPal IPN and many other popular Merchant Services supported
-<LI> Customers can write product reviews (approvals can be required by an Administrator)
+<LI>PayPal and many other popular Merchant Services supported
+<LI>Customers can write product reviews (approvals can be required by an Administrator)
 <LI>Low-Stock notifications to administrator when inventory is getting low (level can be configured)
-<LI>For the Developer... simple customization via Stylesheets
 <LI>Developers Toolkit helps quickly locate a setting or text string to be customized
 <LI>Scalable from small shops to larger shops with hundreds of thousands of products 
-<LI>Track Who's Online interactively 
+<LI>Track Who's Online interactively to see what customers are doing while they shop
 <LI>Multiple Language Support
-<LI>Multiple Currency Support</UL>
+<LI>Multiple Currency Support
+<li>Developers have the benefit of being able to use the notifier subsystem which allows you to "hook" into various cart events to alter the normal behaviour of standard activities.</li>
+
+</UL>
 </div>
 <div>
 <h1>Support Resources </h1>
@@ -204,7 +212,7 @@ It is, after all, about commerce.
 </td>
 </tr>
 </table>
-<p align="center"><em>Zen Cart&trade; Copyright 2003 - 2006 </em></p>
+<p align="center"><em>Zen Cart&trade; Copyright 2003 - 2010 </em></p>
 <br /><br />
 </body>
 </html>

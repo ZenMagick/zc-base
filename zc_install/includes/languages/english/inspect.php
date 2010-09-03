@@ -2,10 +2,10 @@
 /**
  * @package Installer
  * @access private
- * @copyright Copyright 2003-2007 Zen Cart Development Team
+ * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: inspect.php 7411 2007-11-11 05:47:10Z drbyte $
+ * @version $Id: inspect.php 16908 2010-07-15 19:45:12Z drbyte $
  */
 /**
  * defining language components for the page
@@ -69,7 +69,6 @@
   define('LABEL_PHP_EXT_SESSIONS','PHP Sessions Support');
   define('LABEL_PHP_SESSION_AUTOSTART','PHP Session.AutoStart');
   define('LABEL_PHP_EXT_SAVE_PATH','PHP Session.Save_Path');
-  define('LABEL_PHP_EXT_FTP','PHP FTP Support');
   define('LABEL_PHP_EXT_CURL','PHP cURL Support');
   define('LABEL_CURL_NONSSL','CURL NON-SSL Capability');
   define('LABEL_CURL_SSL','CURL SSL Capability');
@@ -102,7 +101,6 @@
   define('LABEL_FOLDER_PERMISSIONS','File and Folder Permissions');
   define('LABEL_WRITABLE_FILE_INFO', 'In order for the installer to store the setup information you provide in the following pages, the configure.php files shown below need to be "writable".');
   define('LABEL_WRITABLE_FOLDER_INFO','In order for many Zen Cart&trade; administrative and day-to-day functions to work properly,
-You need to mark several files/folders "Writeable".  The following is a list of folders which need to be "read-write", 
-along with recommended CHMOD settings. Please correct these settings before continuing installation. 
+You need to mark several files/folders "Writeable".  The following is a list of folders which need to be "read-write",
+along with recommended CHMOD settings. Please correct these settings before continuing installation.
 Refresh this page in your browser to re-check settings.<br /><br />Some hosts may not allow you to set CHMOD 777, but only 666. Start with the higher setting first, and switch to lower values if required.');
-?>

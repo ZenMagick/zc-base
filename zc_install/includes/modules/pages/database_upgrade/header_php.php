@@ -2,10 +2,10 @@
 /**
  * @package Installer
  * @access private
- * @copyright Copyright 2003-2007 Zen Cart Development Team
+ * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: header_php.php 7115 2007-09-27 03:50:44Z drbyte $
+ * @version $Id: header_php.php 15933 2010-04-13 13:20:55Z drbyte $
  */
 
 /*
@@ -27,7 +27,7 @@
 /////////////////////////////////////////////////////////////////////
 //this is the latest database-version-level that this script knows how to inspect and upgrade to.
 //it is used to determine whether to stay on the upgrade page when done, or continue to the finished page
-$latest_version = '1.3.8'; 
+$latest_version = '1.3.9';
 
 ///////////////////////////////////
 $is_upgrade = true; //that's what this page is all about!
@@ -82,6 +82,11 @@ $sniffer_text = '';
 
 //display options based on what was found -- THESE SHOULD BE PROCESSED IN REVERSE ORDER, NEWEST VERSION FIRST... !
 //that way only the "earliest-required" upgrade is suggested first.
+    $needs_v1_3_9=false;
+    if (!$dbinfo->version139) {
+      $sniffer_text =  ' upgrade v1.3.8 to v1.3.9';
+      $needs_v1_3_9=true;
+    }
     $needs_v1_3_8=false;
     if (!$dbinfo->version138) {
       $sniffer_text =  ' upgrade v1.3.7 to v1.3.8';
@@ -212,6 +217,7 @@ if (ZC_UPG_DEBUG2==true) {
   echo '<br>136='.$dbinfo->version136;
   echo '<br>137='.$dbinfo->version137;
   echo '<br>138='.$dbinfo->version138;
+  echo '<br>139='.$dbinfo->version139;
   echo '<br>';
   }
 
@@ -223,6 +229,7 @@ if (ZC_UPG_DEBUG2==true) {
    if (is_array($_POST['version'])) {
    if (ZC_UPG_DEBUG2==true) foreach($_POST['version'] as $value) { echo 'Selected: ' . $value.'<br />';}
      reset($_POST['version']);
+     if (sizeof($_POST['version'])) $zc_install->updateAdminIpList();
      while (list(, $value) = each($_POST['version'])) {
      $sniffer_file = '';
       switch ($value) {
@@ -367,6 +374,15 @@ if (ZC_UPG_DEBUG2==true) {
           $got_v1_3_8 = true; //after processing this step, this will be the new version-level
           $db_upgraded_to_version='1.3.8';
           break;
+       case '1.3.8':  // upgrading from v1.3.8 TO 1.3.9
+//          if (!$dbinfo->version138 || $dbinfo->version139) continue;  // if prerequisite not completed, or already done, skip
+          $sniffer_file = '_upgrade_zencart_138_to_139.sql';
+          if (ZC_UPG_DEBUG2==true) echo $sniffer_file.'<br>';
+          $got_v1_3_9 = true; //after processing this step, this will be the new version-level
+          $db_upgraded_to_version='1.3.9';
+          if (file_exists(DIR_WS_INCLUDES . '../extras/curltest.php')) @unlink(DIR_WS_INCLUDES . '../extras/curltest.php');
+          if (file_exists(DIR_WS_INCLUDES . 'modules/payment/paypal/ipn_application_top.php')) @unlink(DIR_WS_INCLUDES . 'modules/payment/paypal/ipn_application_top.php');
+          break;
 
        default:
        $nothing_to_process=true;
@@ -383,12 +399,12 @@ if (ZC_UPG_DEBUG2==true) {
 
        if (ZC_UPG_DEBUG2==true) echo 'Processing ['.$sniffer_file.']...<br />';
        if ($zc_install->error == false && $nothing_to_process==false) {
-        //open database connection to run queries against it 
+        //open database connection to run queries against it
         $db = new queryFactory;
         $db->Connect(DB_SERVER, DB_SERVER_USERNAME, DB_SERVER_PASSWORD, DB_DATABASE) or die("Unable to connect to database");
 
           // load the upgrade.sql file(s) relative to the required step(s)
-          $query_results = executeSql('sql/'. DB_TYPE . $sniffer_file, DB_DATABASE, DB_PREFIX); 
+          $query_results = executeSql('sql/'. DB_TYPE . $sniffer_file, DB_DATABASE, DB_PREFIX);
            if ($query_results['queries'] > 0 && $query_results['queries'] != $query_results['ignored']) {
              $messageStack->add('upgrade',$query_results['queries'].' statements processed.', 'success');
            } else {
@@ -443,7 +459,7 @@ echo 'CAUTION: '.$value.'<br />';
   }
 
 
- if ($db_upgraded_to_version==$latest_version && $zc_install->error == false && $failed_entries==0) { 
+ if ($db_upgraded_to_version==$latest_version && $zc_install->error == false && $failed_entries==0) {
   // if all db upgrades have been applied, go to the 'finished' page.
   header('location: index.php?main_page=finished' . zcInstallAddSID() );
   exit;

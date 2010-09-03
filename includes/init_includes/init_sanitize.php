@@ -4,10 +4,10 @@
  * see {@link  http://www.zen-cart.com/wiki/index.php/Developers_API_Tutorials#InitSystem wikitutorials} for more details.
  *
  * @package initSystem
- * @copyright Copyright 2003-2005 Zen Cart Development Team
+ * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: init_sanitize.php 6916 2007-09-02 17:03:26Z wilt $
+ * @version $Id: init_sanitize.php 15880 2010-04-11 16:24:30Z wilt $
  * @todo move the array process to security class
  */
 
@@ -22,24 +22,24 @@
 /**
  * process all $_GET terms
  */
-  $strictReplace = '/[<>\']/';
-  $unStrictReplace = '/[<>]/';
+  $strictReplace = '[<>\']';
+  $unStrictReplace = '[<>]';
   if (isset($_GET) && count($_GET) > 0) {
     foreach($_GET as $key=>$value){
       if(is_array($value)){
         foreach($value as $key2 => $val2){
           if ($key2 == 'keyword') {
-            $_GET[$key][$key2] = preg_replace($unStrictReplace, '', $val2);
+            $_GET[$key][$key2] = preg_replace('/'.$unStrictReplace.'/', '', $val2);
           } else {
-            $_GET[$key][$key2] = preg_replace($strictReplace, '', $val2);            
+            $_GET[$key][$key2] = preg_replace('/'.$strictReplace.'/', '', $val2);
           }
           unset($GLOBALS[$key]);
         }
       } else {
         if ($key == 'keyword') {
-          $_GET[$key] = preg_replace($unStrictReplace, '', $value);
+          $_GET[$key] = preg_replace('/'.$unStrictReplace.'/', '', $value);
         } else {
-          $_GET[$key] = preg_replace($strictReplace, '', $value);          
+          $_GET[$key] = preg_replace('/'.$strictReplace.'/', '', $value);
         }
         unset($GLOBALS[$key]);
       }
@@ -67,7 +67,7 @@
     foreach($_COOKIE as $key=>$value){
       if(is_array($value)){
         foreach($value as $key2 => $val2){
-          unset($GLOBALS[$key]);  
+          unset($GLOBALS[$key]);
         }
       } else {
         unset($GLOBALS[$key]);

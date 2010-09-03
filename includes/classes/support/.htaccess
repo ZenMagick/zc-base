@@ -1,22 +1,11 @@
-# $Id: .htaccess 1105 2005-04-04 22:05:35Z birdbrain $
 #
-# This is used with Apache WebServers
-# The following blocks direct HTTP requests in this directory recursively
+# @copyright Copyright 2003-2010 Zen Cart Development Team
+# @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
+# @version $Id: .htaccess 15992 2010-04-19 06:02:20Z drbyte $
 #
-# For this to work, you must include the parameter 'Limit' to the AllowOverride configuration
-#
-# Example:
-#
-#<Directory "/usr/local/apache/htdocs">
-#  AllowOverride Limit
-#
-# 'All' with also work. (This configuration is in your apache/conf/httpd.conf file)
-#
-# This does not affect PHP include/require functions
-#
-# Example: http://server/catalog/includes/application_top.php will not work
+#NOBODY SHOULD BE SNOOPING HERE
 
-<Files *.php>
-Order Deny,Allow
-Deny from all
-</Files>
+<Limit GET POST PUT>
+Order Allow,Deny
+Deny from All
+</Limit>

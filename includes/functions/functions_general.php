@@ -4,10 +4,10 @@
  * General functions used throughout Zen Cart
  *
  * @package functions
- * @copyright Copyright 2003-2009 Zen Cart Development Team
+ * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: functions_general.php 14754 2009-11-07 20:35:18Z drbyte $
+ * @version $Id: functions_general.php 16312 2010-05-22 08:13:42Z wilt $
  */
 if (!defined('IS_ADMIN_FLAG')) {
   die('Illegal Access');
@@ -24,7 +24,7 @@ if (!defined('IS_ADMIN_FLAG')) {
  * Redirect to another page or site
  * @param string The url to redirect to
 */
-  function zen_redirect($url) {
+  function zen_redirect($url, $httpResponseCode = '') {
     global $request_type;
     // Are we loading an SSL page?
     if ( (ENABLE_SSL == true) && ($request_type == 'SSL') ) {
@@ -41,9 +41,15 @@ if (!defined('IS_ADMIN_FLAG')) {
     // header locates should not have the &amp; in the address it breaks things
     while (strstr($url, '&amp;')) $url = str_replace('&amp;', '&', $url);
 
-    header('Location: ' . $url);
+    if ($httpResponseCode == '') {
+      header('Location: ' . $url);
+      session_write_close();
+    } else {
+      header('Location: ' . $url, TRUE, (int)$httpResponseCode);
+      session_write_close();
+    }
 
-    zen_exit();
+    exit();
   }
 
 /**
@@ -148,7 +154,7 @@ if (!defined('IS_ADMIN_FLAG')) {
 //    die ('here');
             $get_url .= $key . '/' . rawurlencode(stripslashes($value)) . '/';
           } else {
-            $get_url .= $key . '=' . rawurlencode(stripslashes($value)) . '&';
+            $get_url .= zen_sanitize_string($key) . '=' . rawurlencode(stripslashes($value)) . '&';
           }
         }
       }
@@ -171,11 +177,10 @@ if (!defined('IS_ADMIN_FLAG')) {
 
 ////
 // Wrapper function for round()
-  function zen_round($number, $precision) {
-/// fix rounding error on GVs etc.
-    $number = round($number, $precision);
-
-    return $number;
+  function zen_round($value, $precision) {
+    $value =  round($value *pow(10,$precision),0);
+    $value = $value/pow(10,$precision);
+    return $value;
   }
 
 
@@ -222,7 +227,7 @@ if (!defined('IS_ADMIN_FLAG')) {
     if ($year != 1969 && @date('Y', mktime($hour, $minute, $second, $month, $day, $year)) == $year) {
       return date(DATE_FORMAT, mktime($hour, $minute, $second, $month, $day, $year));
     } else {
-      return preg_replace('/2037/' . '$', $year, date(DATE_FORMAT, mktime($hour, $minute, $second, $month, $day, 2037)));
+      return preg_replace('/2037$/', $year, date(DATE_FORMAT, mktime($hour, $minute, $second, $month, $day, 2037)));
     }
   }
 
@@ -273,7 +278,7 @@ if (!defined('IS_ADMIN_FLAG')) {
 */
 
 // Add this word to the $tmpstring, starting the $tmpstring
-        $tmpstring = trim(str_replace('"', ' ', $pieces[$k]));
+        $tmpstring = trim(preg_replace('/"/', ' ', $pieces[$k]));
 
 // Check for one possible exception to the rule. That there is a single quoted word.
         if (substr($pieces[$k], -1 ) == '"') {
@@ -323,7 +328,7 @@ if (!defined('IS_ADMIN_FLAG')) {
    $piece onto the tail of the string, push the $tmpstring onto the $haves,
    kill the $tmpstring, turn the $flag "off", and return.
 */
-            $tmpstring .= ' ' . trim(str_replace('"', ' ', $pieces[$k]));
+            $tmpstring .= ' ' . trim(preg_replace('/"/', ' ', $pieces[$k]));
 
 // Push the $tmpstring onto the array of stuff to search for
             $objects[] = trim($tmpstring);
@@ -736,11 +741,12 @@ if (!defined('IS_ADMIN_FLAG')) {
       if (is_numeric($domain_array[$domain_size-2]) && is_numeric($domain_array[$domain_size-1])) {
         return false;
       } else {
-        if ($domain_size > 3) {
-          return $domain_array[$domain_size-3] . '.' . $domain_array[$domain_size-2] . '.' . $domain_array[$domain_size-1];
-        } else {
-          return $domain_array[$domain_size-2] . '.' . $domain_array[$domain_size-1];
+        $tld = "";
+        foreach ($domain_array as $dPart)
+        {
+          if ($dPart != "www") $tld = $tld . "." . $dPart;
         }
+        return substr($tld, 1);
       }
     } else {
       return false;
@@ -846,9 +852,8 @@ if (!defined('IS_ADMIN_FLAG')) {
     $sql = "SELECT count(*) AS total
             FROM " . TABLE_COUPON_RESTRICT . "
             WHERE category_id = -1
-           AND coupon_restrict = 'Y'
+            AND coupon_restrict = 'Y'
             AND coupon_id = " . (int)$coupon_id . " LIMIT 1";
-
     $checkQuery = $db->execute($sql);
     foreach ($catPathArray as $catPath) {
       $sql = "SELECT * FROM " . TABLE_COUPON_RESTRICT . "
@@ -989,30 +994,13 @@ if (!defined('IS_ADMIN_FLAG')) {
 
 ////
 // Set back button
-  function zen_back_link() {
-    if (sizeof($_SESSION['navigation']->path)-2 > 0) {
-      $back = sizeof($_SESSION['navigation']->path)-2;
-      $link = '<a href="' . zen_href_link($_SESSION['navigation']->path[$back]['page'], zen_array_to_string($_SESSION['navigation']->path[$back]['get'], array('action')), $_SESSION['navigation']->path[$back]['mode']) . '">';
-    } else {
-      if (isset($_SERVER['HTTP_REFERER']) && strstr(HTTP_SERVER, $_SERVER['HTTP_REFERER'])) {
-        $link= $_SERVER['HTTP_REFERER'];
-      } else {
-        $link = '<a href="' . zen_href_link(FILENAME_DEFAULT) . '">';
-      }
-      $_SESSION['navigation'] = new navigationHistory;
-    }
-    return $link;
-  }
-
-
-////
-// Set back link only
-  function zen_back_link_only($link_only = false) {
-    if (sizeof($_SESSION['navigation']->path)-2 > 0) {
+  function zen_back_link($link_only = false) {
+    if (sizeof($_SESSION['navigation']->path)-2 >= 0) {
       $back = sizeof($_SESSION['navigation']->path)-2;
       $link = zen_href_link($_SESSION['navigation']->path[$back]['page'], zen_array_to_string($_SESSION['navigation']->path[$back]['get'], array('action')), $_SESSION['navigation']->path[$back]['mode']);
     } else {
-      if (strstr(HTTP_SERVER, $_SERVER['HTTP_REFERER'])) {
+      if (isset($_SERVER['HTTP_REFERER']) && preg_match("~^".HTTP_SERVER."~i", $_SERVER['HTTP_REFERER']) ) {
+      //if (isset($_SERVER['HTTP_REFERER']) && strstr($_SERVER['HTTP_REFERER'], str_replace(array('http://', 'https://'), '', HTTP_SERVER) ) ) {
         $link= $_SERVER['HTTP_REFERER'];
       } else {
         $link = zen_href_link(FILENAME_DEFAULT);
@@ -1026,6 +1014,7 @@ if (!defined('IS_ADMIN_FLAG')) {
       return '<a href="' . $link . '">';
     }
   }
+
 
 ////
 // Return a random row from a database query
@@ -1481,8 +1470,11 @@ if (!defined('IS_ADMIN_FLAG')) {
  * strip out accented characters to reasonable approximations of english equivalents
  */
   function replace_accents($s) {
+    $skipPreg = (defined('OVERRIDE_REPLACE_ACCENTS_WITH_HTMLENTITIES') && OVERRIDE_REPLACE_ACCENTS_WITH_HTMLENTITIES == 'TRUE') ? TRUE : FALSE;
     $s = htmlentities($s);
-    $s = preg_replace ('/&([a-zA-Z])(uml|acute|elig|grave|circ|tilde|cedil|ring|quest|slash|caron);/', '$1', $s);
+    if ($skipPreg == FALSE) {
+      $s = preg_replace ('/&([a-zA-Z])(uml|acute|elig|grave|circ|tilde|cedil|ring|quest|slash|caron);/', '$1', $s);
+    }
     $s = html_entity_decode($s);
     return $s;
   }
@@ -1495,16 +1487,53 @@ if (!defined('IS_ADMIN_FLAG')) {
  * @var string
  * @return boolean
  */
-  function is__writeable($filepath) {
+  function is__writeable($filepath, $make_unwritable = true) {
     if (is_dir($filepath)) return is_writable($filepath);
     $fp = @fopen($filepath, 'a');
     if ($fp) {
       @fclose($fp);
-      return true;
+      if ($make_unwritable) set_unwritable($filepath);
+      $fp = @fopen($filepath, 'a');
+      if ($fp) {
+        @fclose($fp);
+        return true;
+      }
     }
     return false;
   }
+/**
+ * attempts to make the specified file read-only
+ *
+ * @var string
+ * @return boolean
+ */
+  function set_unwritable($filepath) {
+    return @chmod($filepath, 0444);
+  }
+/**
+ * convert supplied string to UTF-8, dropping any symbols which cannot be translated easily
+ * useful for submitting cleaned-up data to payment gateways or other external services, esp if the data was copy+pasted from windows docs via windows browser to store in database
+ *
+ * @param string $string
+ */
+  function charsetConvertWinToUtf8($string) {
+    if (function_exists('iconv')) $string = iconv("Windows-1252", "ISO-8859-1//IGNORE", $string);
+    $string = htmlentities($string, ENT_QUOTES, 'UTF-8');
+    return $string;
+  }
 
+/**
+ * Convert supplied string to/from entities between charsets, to sanitize data from payment gateway
+ * @param $string
+ * @return string
+ */
+  function charsetClean($string) {
+    if (CHARSET == 'UTF-8') return $string;
+    if (function_exists('iconv')) $string = iconv("Windows-1252", CHARSET . "//IGNORE", $string);
+    $string = htmlentities($string, ENT_QUOTES, 'UTF-8');
+    $string = html_entity_decode($string, ENT_QUOTES, CHARSET);
+    return $string;
+  }
 
 /////////////////////////////////////////////
 ////
@@ -1524,4 +1553,3 @@ if (!defined('IS_ADMIN_FLAG')) {
 ////
 /////////////////////////////////////////////
 
-?>

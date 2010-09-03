@@ -3,10 +3,10 @@
  * checkout_confirmation header_php.php
  *
  * @package page
- * @copyright Copyright 2003-2007 Zen Cart Development Team
+ * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: header_php.php 6100 2007-04-01 10:24:05Z wilt $
+ * @version $Id: header_php.php 16397 2010-05-26 11:21:22Z drbyte $
  */
 
 // This should be first line of the script:
@@ -40,6 +40,9 @@ if (isset($_SESSION['cart']->cartID) && $_SESSION['cartID']) {
 if (!$_SESSION['shipping']) {
   zen_redirect(zen_href_link(FILENAME_CHECKOUT_SHIPPING, '', 'SSL'));
 }
+if (isset($_SESSION['shipping']['id']) && $_SESSION['shipping']['id'] == 'free_free' && defined('MODULE_ORDER_TOTAL_SHIPPING_FREE_SHIPPING_OVER') && $_SESSION['cart']->show_total() < MODULE_ORDER_TOTAL_SHIPPING_FREE_SHIPPING_OVER) {
+  zen_redirect(zen_href_link(FILENAME_CHECKOUT_SHIPPING, '', 'SSL'));
+}
 
 if (isset($_POST['payment'])) $_SESSION['payment'] = $_POST['payment'];
 $_SESSION['comments'] = zen_db_prepare_input($_POST['comments']);
@@ -69,6 +72,11 @@ $order_total_modules->pre_confirmation_check();
 
 // load the selected payment module
 require(DIR_WS_CLASSES . 'payment.php');
+
+if (!isset($credit_covers)) $credit_covers = FALSE;
+
+//echo 'credit covers'.$credit_covers;
+
 if ($credit_covers) {
   unset($_SESSION['payment']);
   $_SESSION['payment'] = '';
@@ -78,7 +86,7 @@ if ($credit_covers) {
 
 $payment_modules = new payment($_SESSION['payment']);
 $payment_modules->update_status();
-if (($_SESSION['payment'] == '' && !$credit_covers) || (is_array($payment_modules->modules)) && (sizeof($payment_modules->modules) > 1) && (!is_object($$_SESSION['payment'])) && (!$credit_covers) ) {
+if ( ($_SESSION['payment'] == '' || !is_object($$_SESSION['payment']) ) && $credit_covers === FALSE) {
   $messageStack->add_session('checkout_payment', ERROR_NO_PAYMENT_MODULE_SELECTED, 'error');
 }
 
@@ -144,7 +152,7 @@ if (isset($$_SESSION['payment']->form_action_url)) {
 }
 
 // if shipping-edit button should be overridden, do so
-$editShippingButtonLink = zen_href_link(FILENAME_CHECKOUT_SHIPPING, '', 'SSL');	
+$editShippingButtonLink = zen_href_link(FILENAME_CHECKOUT_SHIPPING, '', 'SSL');
 if (method_exists($$_SESSION['payment'], 'alterShippingEditButton')) {
   $theLink = $$_SESSION['payment']->alterShippingEditButton();
   if ($theLink) $editShippingButtonLink = $theLink;

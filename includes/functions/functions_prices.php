@@ -3,10 +3,10 @@
  * functions_prices
  *
  * @package functions
- * @copyright Copyright 2003-2007 Zen Cart Development Team
+ * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: functions_prices.php 6905 2007-09-01 20:05:11Z ajeh $
+ * @version $Id: functions_prices.php 15932 2010-04-13 12:28:11Z drbyte $
  */
 
 ////
@@ -17,17 +17,17 @@
 
     if ($product->RecordCount() > 0) {
 //  	  $product_price = $product->fields['products_price'];
-  	  $product_price = zen_get_products_base_price($product_id);
+      $product_price = zen_get_products_base_price($product_id);
     } else {
-  	  return false;
+      return false;
     }
 
     $specials = $db->Execute("select specials_new_products_price from " . TABLE_SPECIALS . " where products_id = '" . (int)$product_id . "' and status='1'");
     if ($specials->RecordCount() > 0) {
 //      if ($product->fields['products_priced_by_attribute'] == 1) {
-    	  $special_price = $specials->fields['specials_new_products_price'];
+        $special_price = $specials->fields['specials_new_products_price'];
     } else {
-  	  $special_price = false;
+      $special_price = false;
     }
 
     if(substr($product->fields['products_model'], 0, 4) == 'GIFT') {    //Never apply a salededuction to Ian Wilson's Giftvouchers
@@ -92,7 +92,7 @@
 
       if (!$special_price) {
         return number_format($sale_product_price, 4, '.', '');
-    	} else {
+      } else {
         switch($sale->fields['sale_specials_condition']){
           case 0:
             return number_format($sale_product_price, 4, '.', '');
@@ -121,7 +121,7 @@
       $products_price = $product_check->fields['products_price'];
 
       // do not select display only attributes and attributes_price_base_included is true
-      $product_att_query = $db->Execute("select options_id, price_prefix, options_values_price, attributes_display_only, attributes_price_base_included from " . TABLE_PRODUCTS_ATTRIBUTES . " where products_id = '" . (int)$products_id . "' and attributes_display_only != '1' and attributes_price_base_included='1'". " order by options_id, price_prefix, options_values_price");
+      $product_att_query = $db->Execute("select options_id, price_prefix, options_values_price, attributes_display_only, attributes_price_base_included, round(concat(price_prefix, options_values_price), 5) as value from " . TABLE_PRODUCTS_ATTRIBUTES . " where products_id = '" . (int)$products_id . "' and attributes_display_only != '1' and attributes_price_base_included='1'". " order by options_id, value");
 
       $the_options_id= 'x';
       $the_base_price= 0;
@@ -130,7 +130,7 @@
         while (!$product_att_query->EOF) {
           if ( $the_options_id != $product_att_query->fields['options_id']) {
             $the_options_id = $product_att_query->fields['options_id'];
-            $the_base_price += $product_att_query->fields['options_values_price'];
+            $the_base_price += (($product_att_query->fields['price_prefix'] == '-') ? -1 : 1) * $product_att_query->fields['options_values_price'];
           }
           $product_att_query->MoveNext();
         }
@@ -851,13 +851,13 @@ If a special exist * 10+9
     $salemaker_sales = $db->Execute("select sale_id, sale_status, sale_name, sale_categories_all, sale_deduction_value, sale_deduction_type, sale_pricerange_from, sale_pricerange_to, sale_specials_condition, sale_categories_selected, sale_date_start, sale_date_end, sale_date_added, sale_date_last_modified, sale_date_status_change from " . TABLE_SALEMAKER_SALES . " where sale_status='1'");
     while (!$salemaker_sales->EOF) {
       $categories = explode(',', $salemaker_sales->fields['sale_categories_all']);
-  	  while (list($key,$value) = each($categories)) {
-	      if ($value == $check_category) {
+      while (list($key,$value) = each($categories)) {
+        if ($value == $check_category) {
           $sale_exists = 'true';
-  	      $sale_maker_discount = $salemaker_sales->fields['sale_deduction_value'];
-  	      $sale_maker_special_condition = $salemaker_sales->fields['sale_specials_condition'];
-	        $sale_maker_discount_type = $salemaker_sales->fields['sale_deduction_type'];
-	        break;
+          $sale_maker_discount = $salemaker_sales->fields['sale_deduction_value'];
+          $sale_maker_special_condition = $salemaker_sales->fields['sale_specials_condition'];
+          $sale_maker_discount_type = $salemaker_sales->fields['sale_deduction_type'];
+          break;
         }
       }
       $salemaker_sales->MoveNext();
@@ -945,11 +945,11 @@ If a special exist * 10
     $salemaker_sales = $db->Execute("select sale_id, sale_status, sale_name, sale_categories_all, sale_deduction_value, sale_deduction_type, sale_pricerange_from, sale_pricerange_to, sale_specials_condition, sale_categories_selected, sale_date_start, sale_date_end, sale_date_added, sale_date_last_modified, sale_date_status_change from " . TABLE_SALEMAKER_SALES . " where sale_status='1'");
     while (!$salemaker_sales->EOF) {
       $categories = explode(',', $salemaker_sales->fields['sale_categories_all']);
-  	  while (list($key,$value) = each($categories)) {
-	      if ($value == $check_category) {
-  	      $sale_maker_discount = $salemaker_sales->fields['sale_deduction_value'];
-	        $sale_maker_discount_type = $salemaker_sales->fields['sale_deduction_type'];
-	        break;
+      while (list($key,$value) = each($categories)) {
+        if ($value == $check_category) {
+          $sale_maker_discount = $salemaker_sales->fields['sale_deduction_value'];
+          $sale_maker_discount_type = $salemaker_sales->fields['sale_deduction_type'];
+          break;
         }
       }
       $salemaker_sales->MoveNext();
@@ -1302,15 +1302,19 @@ If a special exist * 10
 
 
 ////
-// are there discount quanties
+// are there discount quantities
   function zen_get_discount_qty($product_id, $check_qty) {
     global $db;
 
     $product_id = (int)$product_id;
 
-    $discounts_qty_query = $db->Execute("select * from " . TABLE_PRODUCTS_DISCOUNT_QUANTITY . " where products_id='" . (int)$product_id . "' and discount_qty != 0");
+    $discounts_qty_query = $db->Execute("select pqd.*, p.products_discount_type
+              from " . TABLE_PRODUCTS_DISCOUNT_QUANTITY . " pqd, " .
+              TABLE_PRODUCTS . " p
+             where pqd.products_id='" . (int)$product_id . "' and pqd.discount_qty != 0
+             and p.products_id = pqd.products_id");
 //echo 'zen_get_discount_qty: ' . $product_id . ' - ' . $check_qty . '<br />';
-    if ($discounts_qty_query->RecordCount() > 0 and $check_qty > 0) {
+    if ($discounts_qty_query->RecordCount() > 0 and $check_qty > 0 && $discounts_qty_query->fields['products_discount_type'] !=0) {
       return true;
     } else {
       return false;
@@ -1362,4 +1366,3 @@ If a special exist * 10
     }
   }
 
-?>

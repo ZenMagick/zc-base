@@ -1,34 +1,38 @@
 <!--
 /**
  * @package documentation
- * @copyright Copyright 2003-2006 Zen Cart Development Team
+ * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: 2.readme_how_to_upgrade.html 5461 2006-12-30 00:28:54Z drbyte $
+ * @version $Id: 2.readme_how_to_upgrade.html 15633 2010-03-07 05:06:05Z drbyte $
  */
 //-->
 <html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <style type="text/css">
 <!--
 body, table{ font-family:Verdana, Arial, Helvetica, sans-serif; font-size:14px; }
-table.intro {border-color:C96E29; }
-td.intro{background-color:#EEEEEE ; border-color:5778ce; font-size:10px; }
-td.plainbox, div.callout {border: 1px dashed; border-color: C96E29; margin:5 40 5 40;}
-.heading {background-color:5778CE; font-weight:bold; font-size:14px; width: 100%; }
-.title1 {color:C96E29; font-weight:bold; font-size:22px; }
-.title2 {color:C96E29; font-weight:bold; font-size:13px; }
+table.intro {border-color:#C96E29; }
+td.intro{background-color:#EEEEEE ; border-color:#5778ce; font-size:10px; }
+td.plainbox, div.callout {border: 1px dashed; border-color: #C96E29; margin:5px 40px 5px 40px;}
+.heading {background-color:#5778CE; font-weight:bold; font-size:14px; width: 100%; }
+.title1 {color:#C96E29; font-weight:bold; font-size:22px; }
+.title2 {color:#C96E29; font-weight:bold; font-size:13px; }
 .small {font-size:10px ;}
-.error {color:FF0000; }
-.filename {font-family: mono, "Courier New", Courier ; font-size:14px; color: c96e29;}
-.pseudolink {text-decoration:underline; color:5778CE;}
+.error {color:#FF0000; }
+.filename {font-family: mono, "Courier New", Courier ; font-size:14px; color: #c96e29;}
+.pseudolink {text-decoration:underline; color:#5778CE;}
 h1.intro { color: #ffffff; border:1px solid #aca893; background-color: #c96e29;  font-size: 22px;   padding: 4px;}
 h1 { color: #ffffff;    border:1px solid #aca893;   background-color: #5778ce;   font-size: 20px;   padding: 4px;}
 h2 { color: #c96e29; font-size: 18px;}
 h3 { color: #5778ce; font-size: 16px; margin-bottom:0px;}
 h4 { color: #c96e29; font-size: 14px;}
-.style2 {color: FF0000; font-weight: bold; }
+.style2 {color: #FF0000; font-weight: bold; }
 -->
 </style>
-<title>Upgrading Zen Cart(tm) in 3 Easy Steps!</title><body>
+<title>Upgrading Zen Cart(tm) in 3 Easy Steps!</title>
+</head>
+<body>
 
 <table class="intro" cellspacing="4" cellpadding="6" border="3" width="748px" align="center">
 <tr><td class="intro">
@@ -69,12 +73,18 @@ OSI Certified is a certification mark of the Open Source Initiative.
 <td>
 <center><h1 class="intro">3 EASY STEPS TO UPGRADE ZEN CART&trade;</h1></center>
 <div>
-<h1>Paypal IPN  NOTE </h1>
+<h1>NOTICE: Re: Payment AND Shipping Modules </h1>
+<span class="error">You will need to re-install all your active payment and shipping modules as part of your upgrade:
+<ul>
+<li>BEFORE UPGRADING, Take note of the login IDs, transaction keys, email addresses and other settings already configured in EACH of your Payment AND Shipping modules (You'll need this info so you can re-enter it after Installing the modules again).
+<li>Remove each module by clicking the "Remove" button for each one.
+<li>AFTER UPGRADING, Install each module (that you're using) in Admin-&gt;Modules-&gt;Payment and Admin-&gt;Modules-&gt;Shipping in order to take advantage of the bugfixes and feature improvements in each module. (you do NOT need to do this with modules you're NOT using. If you're no longer using a certain module anymore and it doesn't have a red dot next to it, click the "Remove" button to save on processing performance.)
+<li>Re-enter all your configuration settings for each module as you go along. BE SURE TO TEST each one before you take your store live again, to make sure you've got all your settings entered correctly.</li>
+</ul>
 </div>
-<span class="error">If you are using the PayPal IPN payment module, you will need to Remove and re-Install the PayPal IPN module in Admin-&gt;Modules-&gt;Payment-&gt;PayPal IPN in order to take advantage of the bugfixes in the module.</span>
 <h1>Getting Started ... </h1>
 This is a basic guide to upgrading Zen Cart&trade;.  If you have not yet installed Zen Cart, please see the <a href="./1.readme_installation.html">1.readme_installation.html </a>file for installation instructions. <br />
-<br /> 
+<br />
 To upgrade Zen Cart&trade;, you'll need the same basic tools you used to install and customize it in the first place:  An FTP program, a text editor friendly to HTML/PHP code, phpMyAdmin or equivalent access to your MySQL database, and your Control Panel for managing your webspace.<br />
 <br />
 Additionally, you will find a file-comparison tool like <a href="http://winmerge.sf.net" target="_blank">WinMerge</a>,  <a href="http://www.scootersoftware.com/" target="_blank">Beyond Compare</a> or ExamDiff (Linux) to be very helpful.
@@ -157,29 +167,11 @@ For additional help and support issues, check out our <strong><a href="http://tu
 <br />
 <em>Good Luck with your upgrade.  We're glad you're enjoying the Zen Cart&trade; Experience!</em> <br />
 <br /><br /><hr />
-</div>
-<div>
-<h1 class="intro">Special Upgrade Steps Specific to Zen Cart&trade; Versions </h1>
-<h1>Upgrading to v1.3.5+ from earlier 1.3.x </h1>
-<span class="style2">NOTE: for HTMLarea users</span>
-<ul>
-  <li>The<span class="filename"> /htmlarea </span>folder has been MOVED into<span class="filename">  /editors/htmlarea </span></li>
-  <li>You should move your old files to the new location before editing, as this will make things go a little smoother. Note that a couple files have changed in the htmlarea folder to accomodate the new folder path. </li>
-</ul>
-<h1>Activating the <em>PayPal IPN </em>Payment Module </h1>
-In almost every release, the <strong>PayPal IPN </strong>module had overhauls. If you are using the PayPal IPN module, you'll need to reactivate it after installing the new files:<br />
-To activate it, you'll need to "Remove" and "Install" the module via <span class="filename"> Admin | Modules | Payment</span>.  <br />
-<br />
-Take note of the email addresses and other settings already configured in your PayPal IPN module before removing, so you can re-enter them after Installing the module again.<br />
-<h1>Other <em></em>Payment Modules </h1>
-The <strong>Authorize.net AIM</strong> module had a few minor changes in v1.3.7. <br />
-To activate it, you'll need to "Remove" and "Install" the PayPal module in <span class="filename"> Admin | Modules | Payment</span>.  <br />
-<br />
-Take note of the login ID, transaction key, and other settings already configured in the module before removing, so you can re-enter them after Installing the module again.<br />
+
 </div></td>
 </tr>
 </table>
 <br /><br />
-<p align="center"><em>Zen Cart&trade; Copyright 2006</em></p>
+<p align="center"><em>Zen Cart&trade; Copyright 2003 - 2010</em></p>
 </body>
 </html>

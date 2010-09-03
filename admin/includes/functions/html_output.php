@@ -4,10 +4,7 @@
  * @copyright Copyright 2003-2009 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: html_output.php 14753 2009-11-07 19:58:13Z drbyte $
- */
-/**
- * Security Patch v138 20090619
+ * @version $Id: html_output.php 14139 2009-08-10 13:46:02Z wilt $
  */
 
 ////
@@ -203,13 +200,7 @@
       $form .= ' ' . $params;
     }
     $form .= '>';
-/**
- * BOF Security Patch v138 20090619
- */
-    $form .= '<input type="hidden" name="securityToken" value="' . $_SESSION['securityToken'] . '" />';
-/**
- * EOF Security Patch v138 20090619
- */
+    $form .= '<input type="hidden" name="securityToken" value="' . $_SESSION['securityToken'] . '">';
     return $form;
   }
 
@@ -323,7 +314,7 @@
 
     if (zen_not_null($parameters)) $field .= ' ' . $parameters;
 
-    $field .= '>';
+    $field .= '>' . "\n";
 
     if (empty($default) && isset($GLOBALS[$name]) && is_string($GLOBALS[$name]) ) $default = stripslashes($GLOBALS[$name]);
 

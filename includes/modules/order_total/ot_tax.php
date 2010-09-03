@@ -3,10 +3,10 @@
  * ot_tax order-total module
  *
  * @package orderTotal
- * @copyright Copyright 2003-2007 Zen Cart Development Team
+ * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: ot_tax.php 6101 2007-04-01 10:30:22Z wilt $
+ * @version $Id: ot_tax.php 16965 2010-07-23 10:54:39Z wilt $
  */
   class ot_tax {
     var $title, $output;
@@ -24,12 +24,47 @@
       global $order, $currencies;
 
       reset($order->info['tax_groups']);
-      while (list($key, $value) = each($order->info['tax_groups'])) {
-        if ($value > 0 or STORE_TAX_DISPLAY_STATUS == 1) {
-          $this->output[] = array('title' => $key . ':',
-                                  'text' => $currencies->format($value, true, $order->info['currency'], $order->info['currency_value']),
-                                  'value' => $value);
+      $taxDescription = '';
+      $taxValue = 0;
+      if (STORE_TAX_DISPLAY_STATUS == 1)
+      {
+        $taxAddress = zen_get_tax_locations();
+        $result = zen_get_all_tax_descriptions($taxAddress['country_id'], $taxAddress['zone_id']);
+        if (count($result) > 0)
+        {
+          foreach ($result as $description)
+          {
+            if (!isset($order->info['tax_groups'][$description]))
+            {
+              $order->info['tax_groups'][$description] = 0;
+            }
+          }
         }
+      }
+      if (count($order->info['tax_groups']) > 1 && isset($order->info['tax_groups'][0])) unset($order->info['tax_groups'][0]);
+      while (list($key, $value) = each($order->info['tax_groups'])) {
+        if (SHOW_SPLIT_TAX_CHECKOUT == 'true')
+        {
+          if ($value > 0 or ($value == 0 && STORE_TAX_DISPLAY_STATUS == 1 )) {
+            $this->output[] = array('title' => ((is_numeric($key) && $key == 0) ? TEXT_UNKNOWN_TAX_RATE :  $key) . ':',
+                                    'text' => $currencies->format($value, true, $order->info['currency'], $order->info['currency_value']),
+                                    'value' => $value);
+          }
+        } else
+        {
+          if ($value > 0 || ($value == 0 && STORE_TAX_DISPLAY_STATUS == 1))
+          {
+            $taxDescription .= ((is_numeric($key) && $key == 0) ? TEXT_UNKNOWN_TAX_RATE :  $key) . ' + ';
+            $taxValue += $value;
+          }
+        }
+      }
+      if (SHOW_SPLIT_TAX_CHECKOUT != 'true' && ($taxValue > 0 or STORE_TAX_DISPLAY_STATUS == 1))
+      {
+        $this->output[] = array(
+                        'title' => substr($taxDescription, 0 , strlen($taxDescription)-3) . ':' ,
+                        'text' => $currencies->format($taxValue, true, $order->info['currency'], $order->info['currency_value']) ,
+                        'value' => $taxValue);
       }
     }
 

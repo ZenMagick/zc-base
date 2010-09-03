@@ -2,10 +2,10 @@
 /**
  * @package Installer
  * @access private
- * @copyright Copyright 2003-2009 Zen Cart Development Team
+ * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: application_top.php 14753 2009-11-07 19:58:13Z drbyte $
+ * @version $Id: application_top.php 17117 2010-07-31 18:19:41Z drbyte $
  */
 /**
  * ensure odd settings are disabled and set required defaults
@@ -13,23 +13,7 @@
 //@ini_set("session.auto_start","0");
 //@ini_set("session.use_trans_sid","0");
 
-/**
- * set the level of error reporting
- */
-error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
-
 @ini_set("arg_separator.output","&");
-
-/*
- * check settings for, and then turn off magic-quotes support, for both runtime and sybase, as both will cause problems if enabled
- */
-$php_magic_quotes_runtime = (@get_magic_quotes_runtime() > 0) ? 'ON' : 'OFF';
-set_magic_quotes_runtime(0);
-$val = @ini_get('magic_quotes_sybase');
-if (is_string($val) && strtolower($val) == 'on') $val = 1;
-$php_magic_quotes_sybase = ((int)$val > 0) ? 'ON' :'OFF';
-if ((int)$val != 0) @ini_set('magic_quotes_sybase', 0);
-unset($val);
 
 /**
  * Set the local configuration parameters - mainly for developers
@@ -47,12 +31,40 @@ include('includes/installer_params.php');
 /**
  * set the level of error reporting
  */
+error_reporting(version_compare(PHP_VERSION, 5.3, '>=') ? E_ALL & ~E_DEPRECATED & ~E_NOTICE : version_compare(PHP_VERSION, 6.0, '>=') ? E_ALL & ~E_DEPRECATED & ~E_NOTICE & ~E_STRICT : E_ALL & ~E_NOTICE);
+$debug_logfile_path = DEBUG_LOG_FOLDER . '/zcInstallDEBUG-' . time() . '-' . mt_rand(1000,999999) . '.log';
+@ini_set('log_errors', 1);
+@ini_set('log_errors_max_len', 0);
+@ini_set('error_log', $debug_logfile_path);
 if (defined('STRICT_ERROR_REPORTING') && STRICT_ERROR_REPORTING == true) {
-  @ini_set('display_errors', '1');
-  error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED);
+  @ini_set('display_errors', 1);
 } else {
-  error_reporting(0);
+  @ini_set('display_errors', 0);
 }
+/**
+ * @todo php5.3 and PHP6
+ * Timezone detection
+ */
+if (PHP_VERSION >= '5.3' && ini_get('date.timezone') == '')
+{
+  die('ERROR: date.timezone not set in php.ini. Please contact your hosting company to set the timezone in the server PHP configuration before continuing.');
+} elseif (PHP_VERSION >= '5.1') {
+  $baseTZ = date_default_timezone_get();
+  date_default_timezone_set($baseTZ);
+  unset($baseTZ);
+}
+
+/*
+ * check settings for, and then turn off magic-quotes support, for both runtime and sybase, as both will cause problems if enabled
+ */
+$php_magic_quotes_runtime = (@get_magic_quotes_runtime() > 0) ? 'ON' : 'OFF';
+if (version_compare(PHP_VERSION, 5.3, '<') && function_exists('set_magic_quotes_runtime')) set_magic_quotes_runtime(0);
+$val = @ini_get('magic_quotes_sybase');
+if (is_string($val) && strtolower($val) == 'on') $val = 1;
+$php_magic_quotes_sybase = ((int)$val > 0) ? 'ON' :'OFF';
+if ((int)$val != 0) @ini_set('magic_quotes_sybase', 0);
+unset($val);
+
 /**
  * boolean used to see if we are in the admin script, obviously set to false here.
  */
@@ -145,5 +157,3 @@ define('ZC_UPG_DEBUG2', (!isset($_GET['debug2']) && !isset($_POST['debug2']) || 
 define('ZC_UPG_DEBUG3', (!isset($_GET['debug3']) && !isset($_POST['debug3']) || (isset($_POST['debug3']) && $_POST['debug3'] == '')) ? false : true);
 
 
-//die('test');
-?>

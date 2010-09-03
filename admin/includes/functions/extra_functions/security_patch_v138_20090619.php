@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  * @package patches
  * @copyright Copyright 2003-2009 Zen Cart Development Team
@@ -8,8 +8,6 @@
 /**
  * Security Patch v138 20090619
  * @package patches
- */ 
-if (strtolower(basename ( $PHP_SELF )) == strtolower(FILENAME_PASSWORD_FORGOTTEN . '.php') && substr_count ( strtolower($PHP_SELF), '.php' ) > 1)
-{
-  zen_redirect ( zen_href_link ( FILENAME_LOGIN, '', 'SSL' ) );
-}
+ */
+
+/////// NOTE: THIS FILE NO LONGER RELEVANT in v1.3.9 and higher.  PLEASE DELETE FROM YOUR SERVER.

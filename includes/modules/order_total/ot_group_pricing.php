@@ -3,10 +3,10 @@
  * ot_group_pricing order-total module
  *
  * @package orderTotal
- * @copyright Copyright 2003-2007 Zen Cart Development Team
+ * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: ot_group_pricing.php 6773 2007-08-21 12:34:05Z drbyte $
+ * @version $Id: ot_group_pricing.php 17155 2010-08-05 13:33:01Z wilt $
  */
 
 class ot_group_pricing {
@@ -58,11 +58,24 @@ class ot_group_pricing {
     $order_total_tax = $order->info['tax'];
     $order_total = $order->info['total'];
     if ($this->include_shipping != 'true') $order_total -= $order->info['shipping_cost'];
-    if ($this->include_shipping != 'true') $order_total -= $order->info['shipping_tax'];  
     if ($this->include_tax != 'true') $order_total -= $order->info['tax'];
+    if (DISPLAY_PRICE_WITH_TAX == 'true' && $this->include_shipping != 'true')
+    {
+      $order_total += $order->info['shipping_tax'];
+    }
+    $taxGroups = array();
+    foreach ($order->info['tax_groups'] as $key=>$value) {
+      if (isset($_SESSION['shipping_tax_description']) && $key == $_SESSION['shipping_tax_description'])
+      {
+        if ($this->include_shipping != 'true')
+        {
+          $value -= $order->info['shipping_tax'];
+        }
+      }
+      $taxGroups[$key] = $value;
+    }
     $orderTotalFull = $order_total;
-    $order_total = array('totalFull'=>$orderTotalFull, 'total'=>$order_total, 'tax'=>$order_total_tax);
-
+    $order_total = array('totalFull'=>$orderTotalFull, 'total'=>$order_total, 'tax'=>$order_total_tax, 'taxGroups'=>$taxGroups);
     return $order_total;
   }
   function calculate_deductions($order_total) {
@@ -71,12 +84,14 @@ class ot_group_pricing {
     if ($order_total == 0) return $od_amount;
     $orderTotal = $this->get_order_total();
     $orderTotalTax = $orderTotal['tax'];
+    $taxGroups = $orderTotal['taxGroups'];
     $group_query = $db->Execute("select customers_group_pricing from " . TABLE_CUSTOMERS . " where customers_id = '" . (int)$_SESSION['customer_id'] . "'");
     if ($group_query->fields['customers_group_pricing'] != '0') {
       $group_discount = $db->Execute("select group_name, group_percentage from " . TABLE_GROUP_PRICING . "
                                       where group_id = '" . (int)$group_query->fields['customers_group_pricing'] . "'");
       $gift_vouchers = $_SESSION['cart']->gv_only();
-      $discount = ($order_total - $gift_vouchers) * $group_discount->fields['group_percentage'] / 100;
+      $discount = ($orderTotal['total'] - $gift_vouchers) * $group_discount->fields['group_percentage'] / 100;
+//      echo "discout = $discount<br>";
       $od_amount['total'] = round($discount, 2);
       $ratio = $od_amount['total']/$order_total;
       /**
@@ -97,11 +112,11 @@ class ot_group_pricing {
           }
           $adjustedTax = $orderTotalTax * $ratio;
           if ($order->info['tax'] == 0) return $od_amount;
-          $ratioTax = $adjustedTax/$order->info['tax'];
+          $ratioTax = ($orderTotalTax != 0 ) ? $adjustedTax/$orderTotalTax : 0;
           reset($order->info['tax_groups']);
           $tax_deduct = 0;
-          foreach ($order->info['tax_groups'] as $key=>$value) {
-            $od_amount['tax_groups'][$key] = $order->info['tax_groups'][$key] * $ratioTax;
+          foreach ($taxGroups as $key=>$value) {
+            $od_amount['tax_groups'][$key] = $value * $ratioTax;
             $tax_deduct += $od_amount['tax_groups'][$key];
           }
           $od_amount['tax'] = $tax_deduct;
@@ -119,7 +134,8 @@ class ot_group_pricing {
   function pre_confirmation_check($order_total) {
     global $order;
     $od_amount = $this->calculate_deductions($order_total);
-    return $od_amount['total'] + $od_amount['tax'];
+    $order->info['total'] = $order->info['total'] - $od_amount['total'];
+    return $od_amount['total'] + (DISPLAY_PRICE_WITH_TAX == 'true' ? 0 : $od_amount['tax']);
   }
 
   function credit_selection() {
@@ -169,4 +185,3 @@ class ot_group_pricing {
     $db->Execute("delete from " . TABLE_CONFIGURATION . " where configuration_key in ('" . implode("', '", $this->keys()) . "')");
   }
 }
-?>

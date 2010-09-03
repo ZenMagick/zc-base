@@ -5,10 +5,10 @@
  * This class is used during the installation and upgrade processes *
  * @package Installer
  * @access private
- * @copyright Copyright 2003-2007 Zen Cart Development Team
+ * @copyright Copyright 2003-2009 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: class.installer_version_manager.php 7410 2007-11-11 05:46:02Z drbyte $
+ * @version $Id: class.installer_version_manager.php 13999 2009-07-28 16:23:19Z drbyte $
  */
 
 
@@ -29,7 +29,7 @@
       /**
        * The version that this edition of the installer is designed to support
        */
-      $this->latest_version = '1.3.8';
+      $this->latest_version = '1.3.9';
 
       /**
        * Check to see if the configuration table can be found...thus validating the installation, in part.
@@ -77,6 +77,7 @@
       $this->version136 = $this->check_version_136();
       $this->version137 = $this->check_version_137();
       $this->version138 = $this->check_version_138();
+      $this->version139 = $this->check_version_139();
 
 //        if ($this->version103 == true)  $retVal = '1.0.3';
 //        if ($this->version104 == true)  $retVal = '1.0.4';
@@ -100,6 +101,7 @@
         if ($this->version136 == true) $retVal = '1.3.6';
         if ($this->version137 == true) $retVal = '1.3.7';
         if ($this->version138 == true) $retVal = '1.3.8';
+        if ($this->version139 == true) $retVal = '1.3.9';
 
       return $retVal;
     }
@@ -268,6 +270,9 @@
 
     function check_version_121() {
       global $db_test;
+      $got_v1_2_1a = false;
+      $got_v1_2_1b = false;
+
       // test to see if the v1.2.0->v1.2.1 upgrade has been completed
       $tables = $db_test->Execute("SHOW TABLES like '" . DB_PREFIX . "project_version'");
       if ($tables->RecordCount() > 0) {
@@ -279,16 +284,19 @@
       }
 
       //2nd check for v1.2.1
-      $sql = "show fields from " . DB_PREFIX . "products_discount_quantity";
-      $result = $db_test->Execute($sql);
-      while (!$result->EOF) {
-        if (ZC_UPG_DEBUG==true) echo "121b-fields-'discount_qty'->FLOAT=" . $result->fields['Field'] . '->' . $result->fields['Type'] . '<br>';
-        if  ($result->fields['Field'] == 'discount_qty') {
-          if (strtoupper($result->fields['Type']) == 'FLOAT')  {
-            $got_v1_2_1b = true;
+      $tables = $db_test->Execute("SHOW TABLES like '" . DB_PREFIX . "products_discount_quantity'");
+      if ($tables->RecordCount() > 0) {
+        $sql = "show fields from " . DB_PREFIX . "products_discount_quantity";
+        $result = $db_test->Execute($sql);
+        while (!$result->EOF) {
+          if (ZC_UPG_DEBUG==true) echo "121b-fields-'discount_qty'->FLOAT=" . $result->fields['Field'] . '->' . $result->fields['Type'] . '<br>';
+          if  ($result->fields['Field'] == 'discount_qty') {
+            if (strtoupper($result->fields['Type']) == 'FLOAT')  {
+              $got_v1_2_1b = true;
+            }
           }
+          $result->MoveNext();
         }
-      $result->MoveNext();
       }
 
       if (ZC_UPG_DEBUG==true) {
@@ -693,8 +701,46 @@
 
 
 
+    function check_version_139() {
+      global $db_test;
+      $got_v1_3_9 = false;
+      $got_v1_3_9a = false;
+      $got_v1_3_9b = false;
+      //1st check for v1.3.9
+      $sql = "select configuration_title from " . DB_PREFIX . "configuration where configuration_key = 'SHOW_SPLIT_TAX_CHECKOUT'";
+      $result = $db_test->Execute($sql);
+      if (ZC_UPG_DEBUG==true) echo "139a-configtitle_check SHOW_SPLIT_TAX_CHECKOUT =" . $result->fields['configuration_title'] . '<br>';
+      if  ($result->fields['configuration_title'] == 'Show Split Tax Lines') {
+        $got_v1_3_9a = true;
+      }
+      //2nd check for v1.3.9
+      $sql = "show fields from " . DB_PREFIX . "authorizenet";
+      $result = $db_test->Execute($sql);
+      while (!$result->EOF) {
+        if (ZC_UPG_DEBUG==true) echo "139b-fields-'transaction_id'->bigint=" . $result->fields['Field'] . '->' . $result->fields['Type'] . '<br>';
+        if  ($result->fields['Field'] == 'transaction_id') {
+          if (strstr(strtoupper($result->fields['Type']),'BIGINT'))  {
+            $got_v1_3_9b = true;
+          }
+        }
+      $result->MoveNext();
+      }
+
+      if (ZC_UPG_DEBUG==true) {
+        echo '1.3.9a='.$got_v1_3_9a.'<br>';
+        echo '1.3.9b='.$got_v1_3_9b.'<br>';
+      }
+      // evaluate all 1.3.9 checks
+      if ($got_v1_3_9a && $got_v1_3_9b ) {
+        $got_v1_3_9 = true;
+        if (ZC_UPG_DEBUG==true) echo '<br>Got 1.3.9<br>';
+      }
+      return $got_v1_3_9;
+    } //end of 1.3.9 check
+
+
+
 
 
   } // end class
 
-?>

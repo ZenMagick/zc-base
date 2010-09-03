@@ -3,16 +3,16 @@
  * File contains just the shopping cart class
  *
  * @package classes
- * @copyright Copyright 2003-2007 Zen Cart Development Team
+ * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: shopping_cart.php 7276 2007-10-23 05:36:08Z drbyte $
+ * @version $Id: shopping_cart.php 17047 2010-07-29 06:00:38Z drbyte $
  */
 /**
  * Class for managing the Shopping Cart
  *
  * @package classes
- * @copyright Copyright 2003-2007 Zen Cart Development Team
+ * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
  */
@@ -245,7 +245,7 @@ class shoppingCart extends base {
       $_SESSION['new_products_id_in_cart'] = $products_id;
     }
 
-$qty = $this->adjust_quantity($qty, $products_id, 'shopping_cart');
+    $qty = $this->adjust_quantity($qty, $products_id, 'shopping_cart');
 
     if ($this->in_cart($products_id)) {
       $this->update_quantity($products_id, $qty, $attributes);
@@ -304,7 +304,7 @@ $qty = $this->adjust_quantity($qty, $products_id, 'shopping_cart');
                   $sql = "insert into " . TABLE_CUSTOMERS_BASKET_ATTRIBUTES . "
                                         (customers_id, products_id, products_options_id, products_options_value_id, products_options_sort_order)
                                         values ('" . (int)$_SESSION['customer_id'] . "', '" . zen_db_input($products_id) . "', '" .
-                                        (int)$option.'_chk'.$val . "', '" . $val . "',  '" . $products_options_sort_order . "')";
+                                        (int)$option.'_chk'. (int)$val . "', '" . (int)$val . "',  '" . $products_options_sort_order . "')";
 
                                         $db->Execute($sql);
                 }
@@ -316,7 +316,7 @@ $qty = $this->adjust_quantity($qty, $products_id, 'shopping_cart');
                 $sql = "insert into " . TABLE_CUSTOMERS_BASKET_ATTRIBUTES . "
                                       (customers_id, products_id, products_options_id, products_options_value_id, products_options_value_text, products_options_sort_order)
                                       values ('" . (int)$_SESSION['customer_id'] . "', '" . zen_db_input($products_id) . "', '" .
-                                      (int)$option . "', '" . $value . "', '" . $attr_value . "', '" . $products_options_sort_order . "')";
+                                      (int)$option . "', '" . (int)$value . "', '" . $attr_value . "', '" . $products_options_sort_order . "')";
 
                                       $db->Execute($sql);
               }
@@ -402,17 +402,17 @@ $qty = $this->adjust_quantity($qty, $products_id, 'shopping_cart');
             while (list($opt, $val) = each($value)) {
               $products_options_sort_order= zen_get_attributes_options_sort_order(zen_get_prid($products_id), $option, $opt);
               $sql = "update " . TABLE_CUSTOMERS_BASKET_ATTRIBUTES . "
-                        set products_options_value_id = '" . $val . "'
+                        set products_options_value_id = '" . (int)$val . "'
                         where customers_id = '" . (int)$_SESSION['customer_id'] . "'
                         and products_id = '" . zen_db_input($products_id) . "'
-                        and products_options_id = '" . (int)$option.'_chk'.$val . "'";
+                        and products_options_id = '" . (int)$option.'_chk'.(int)$val . "'";
 
               $db->Execute($sql);
             }
           } else {
             if (isset($_SESSION['customer_id'])) {
               $sql = "update " . TABLE_CUSTOMERS_BASKET_ATTRIBUTES . "
-                        set products_options_value_id = '" . $value . "', products_options_value_text = '" . $attr_value . "'
+                        set products_options_value_id = '" . (int)$value . "', products_options_value_text = '" . $attr_value . "'
                         where customers_id = '" . (int)$_SESSION['customer_id'] . "'
                         and products_id = '" . zen_db_input($products_id) . "'
                         and products_options_id = '" . (int)$option . "'";
@@ -651,11 +651,11 @@ $qty = $this->adjust_quantity($qty, $products_id, 'shopping_cart');
           }
         }
 
-        // shipping adjustments
+        // shipping adjustments for Product
         if (($product->fields['product_is_always_free_shipping'] == 1) or ($product->fields['products_virtual'] == 1) or (preg_match('/^GIFT/', addslashes($product->fields['products_model'])))) {
           $this->free_shipping_item += $qty;
           $this->free_shipping_price += zen_add_tax($products_price, $products_tax) * $qty;
-          $this->free_shipping_weight += ($qty * $products_weight);
+          $this->free_shipping_weight += ($qty * $product->fields['products_weight']);
         }
 
         $this->total += zen_add_tax($products_price, $products_tax) * $qty;
@@ -810,6 +810,15 @@ $qty = $this->adjust_quantity($qty, $products_id, 'shopping_cart');
             $new_attributes_weight = $attribute_weight->fields['products_attributes_weight'];
           } else {
             $new_attributes_weight = 0;
+          }
+
+          // shipping adjustments for Attributes
+          if (($product->fields['product_is_always_free_shipping'] == 1) or ($product->fields['products_virtual'] == 1) or (preg_match('/^GIFT/', addslashes($product->fields['products_model'])))) {
+            if ($attribute_weight->fields['products_attributes_weight_prefix'] == '-') {
+              $this->free_shipping_weight -= ($qty * $attribute_weight->fields['products_attributes_weight']);
+            } else {
+              $this->free_shipping_weight += ($qty * $attribute_weight->fields['products_attributes_weight']);
+            }
           }
 
           // + or blank adds
@@ -1435,6 +1444,7 @@ $qty = $this->adjust_quantity($qty, $products_id, 'shopping_cart');
 
     // reset($this->contents); // breaks cart
     $check_contents = $this->contents;
+    reset($check_contents);
     while (list($products_id, ) = each($check_contents)) {
       $test_id = zen_get_prid($products_id);
       if ($test_id == $chk_products_id) {
@@ -1522,15 +1532,22 @@ $qty = $this->adjust_quantity($qty, $products_id, 'shopping_cart');
 
     for ($i=0, $n=sizeof($_POST['products_id']); $i<$n; $i++) {
       $adjust_max= 'false';
+      if ($_POST['cart_quantity'][$i] == '') {
+        $_POST['cart_quantity'][$i] = 0;
+      }
+      if (!is_numeric($_POST['cart_quantity'][$i]) || $_POST['cart_quantity'][$i] < 0) {
+        $messageStack->add_session('header', ERROR_CORRECTIONS_HEADING . ERROR_PRODUCT_QUANTITY_UNITS_SHOPPING_CART . zen_get_products_name($_POST['products_id'][$i]) . ' ' . PRODUCTS_ORDER_QTY_TEXT . $_POST['cart_quantity'][$i], 'error');
+        continue;
+      }
       if ( in_array($_POST['products_id'][$i], (is_array($_POST['cart_delete']) ? $_POST['cart_delete'] : array())) or $_POST['cart_quantity'][$i]==0) {
         $this->remove($_POST['products_id'][$i]);
       } else {
         $add_max = zen_get_products_quantity_order_max($_POST['products_id'][$i]);
-        $cart_qty = $this->in_cart_mixed($_POST['products_id']);
+        $cart_qty = $this->in_cart_mixed($_POST['products_id'][$i]);
         $new_qty = $_POST['cart_quantity'][$i];
 
 //echo 'I SEE actionUpdateProduct: ' . $_POST['products_id'] . ' ' . $_POST['products_id'][$i] . '<br>';
-     $new_qty = $this->adjust_quantity($new_qty, $_POST['products_id'][$i], 'shopping_cart');
+        $new_qty = $this->adjust_quantity($new_qty, $_POST['products_id'][$i], 'shopping_cart');
 
 //die('I see Update Cart: ' . $_POST['products_id'][$i] . ' add qty: ' . $add_max . ' - cart qty: ' . $cart_qty . ' - newqty: ' . $new_qty);
         if (($add_max == 1 and $cart_qty == 1)) {
@@ -1586,7 +1603,7 @@ $qty = $this->adjust_quantity($qty, $products_id, 'shopping_cart');
       $new_qty = $_POST['cart_quantity'];
 
 //echo 'I SEE actionAddProduct: ' . $_POST['products_id'] . '<br>';
-$new_qty = $this->adjust_quantity($new_qty, $_POST['products_id'], 'shopping_cart');
+      $new_qty = $this->adjust_quantity($new_qty, $_POST['products_id'], 'shopping_cart');
 
       if (($add_max == 1 and $cart_qty == 1)) {
         // do not add
@@ -1704,8 +1721,8 @@ $new_qty = $this->adjust_quantity($new_qty, $_POST['products_id'], 'shopping_car
     if (DISPLAY_CART == 'false' && $_GET['main_page'] != FILENAME_SHOPPING_CART) {
       $messageStack->add_session('header', SUCCESS_ADDED_TO_CART_PRODUCT, 'success');
     }
-//    zen_redirect(zen_href_link($goto, zen_get_all_get_params($parameters)));
-    zen_redirect(zen_href_link($goto, zen_get_all_get_params($parameters, $products_id) . 'products_id=' . $_GET['products_id']));
+    if (is_array($parameters) && !in_array('products_id', $parameters) && !strpos($goto, 'reviews') > 5) $parameters[] = 'products_id';
+    zen_redirect(zen_href_link($goto, zen_get_all_get_params($parameters)));
   }
   /**
    * Method to handle cart Action - multiple add products
@@ -1716,12 +1733,12 @@ $new_qty = $this->adjust_quantity($new_qty, $_POST['products_id'], 'shopping_car
    */
   function actionMultipleAddProduct($goto, $parameters) {
     global $messageStack;
+    $addCount = 0;
     if (is_array($_POST['products_id']) && sizeof($_POST['products_id']) > 0) {
-      foreach($_POST['products_id'] as $key=>$val) {
-//      while ( list( $key, $val ) = each($_POST['products_id']) ) {
+      while ( list( $key, $val ) = each($_POST['products_id']) ) {
         if ($val > 0) {
           $adjust_max = false;
-          $prodId = $key;
+          $prodId = preg_replace('/[^0-9a-f:.]/', '', $key);
           $qty = $val;
           $add_max = zen_get_products_quantity_order_max($prodId);
           $cart_qty = $this->in_cart_mixed($prodId);
@@ -1739,6 +1756,7 @@ $new_qty = $this->adjust_quantity($new_qty, $_POST['products_id'], 'shopping_car
               $new_qty = $add_max - $cart_qty;
             }
             $this->add_cart($prodId, $this->get_quantity($prodId)+($new_qty));
+            $addCount++;
           }
           if ($adjust_max == 'true') {
 //            $messageStack->add_session('shopping_cart', ERROR_MAXIMUM_QTY . ' C: - ' . zen_get_products_name($prodId), 'caution');
@@ -1747,7 +1765,7 @@ $new_qty = $this->adjust_quantity($new_qty, $_POST['products_id'], 'shopping_car
         }
       }
 // display message if all is good and not on shopping_cart page
-      if (DISPLAY_CART == 'false' && $_GET['main_page'] != FILENAME_SHOPPING_CART) {
+      if ($addCount && DISPLAY_CART == 'false' && $_GET['main_page'] != FILENAME_SHOPPING_CART) {
         $messageStack->add_session('header', SUCCESS_ADDED_TO_CART_PRODUCTS, 'success');
       }
       zen_redirect(zen_href_link($goto, zen_get_all_get_params($parameters)));
@@ -1891,4 +1909,3 @@ $new_qty = $this->adjust_quantity($new_qty, $_POST['products_id'], 'shopping_car
      return $new_qty;
   }
 }
-?>
