@@ -13,7 +13,20 @@
  * @version $Id: application_top.php 15766 2010-03-31 20:17:56Z drbyte $
  */
 /**
+<<<<<<< HEAD
  * inoculate against hack attempts which waste CPU cycles
+=======
+ * set the level of error reporting
+ */
+if (!defined('E_DEPRECATED')) { defined('E_DEPRECATED', 8192); }
+error_reporting(E_ALL & ~E_DEPRECATED);
+
+// ensure a default timezone is set
+if (!@ini_get('date.timezone')) { date_default_timezone_set(@date_default_timezone_get() ? @date_default_timezone_get() : 'UTC'); }
+
+/*
+ * turn off magic-quotes support, for both runtime and sybase, as both will cause problems if enabled
+>>>>>>> 85036ffee3f92db7bc6cc6020324453db2c9fa74
  */
 $contaminated = (isset($_FILES['GLOBALS']) || isset($_REQUEST['GLOBALS'])) ? true : false;
 $paramsToAvoid = array('GLOBALS', '_COOKIE', '_ENV', '_FILES', '_GET', '_POST', '_REQUEST', '_SERVER', '_SESSION', 'HTTP_COOKIE_VARS', 'HTTP_ENV_VARS', 'HTTP_GET_VARS', 'HTTP_POST_VARS', 'HTTP_POST_FILES', 'HTTP_RAW_POST_DATA', 'HTTP_SERVER_VARS', 'HTTP_SESSION_VARS');
