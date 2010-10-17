@@ -5,7 +5,7 @@
  * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: header_php.php 16592 2010-06-02 23:02:02Z drbyte $
+ * @version $Id: header_php.php 17422 2010-08-31 08:42:09Z drbyte $
  */
 
   @define('SQL_CACHE_METHOD', 'none');
@@ -26,6 +26,15 @@
     $zc_install->setError('Database Type Invalid', 27);
   }
 
+  if ($za_dir = @dir(DIR_FS_SQL_CACHE)) {
+    while ($zv_file = $za_dir->read()) {
+      if (preg_match('/^zcInstall.*\.log$/', $zv_file)) {
+        unlink(DIR_FS_SQL_CACHE . '/' . $zv_file);
+      }
+    }
+    $za_dir->close();
+    unset($za_dir);
+  }
 
   if (isset($_POST['submit'])) {
     $zc_install->validateStoreSetup($_POST);

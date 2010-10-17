@@ -7,7 +7,7 @@
  * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: filenames.php 15519 2010-02-19 11:01:58Z drbyte $
+ * @version $Id: filenames.php 17421 2010-08-31 00:23:52Z drbyte $
  * @private
  */
 /**
@@ -25,6 +25,7 @@ define('FILENAME_ADDRESS_BOOK_PROCESS', 'address_book_process');
 define('FILENAME_ADMIN', 'admin');
 define('FILENAME_ADVANCED_SEARCH', 'advanced_search');
 define('FILENAME_ADVANCED_SEARCH_RESULT', 'advanced_search_result');
+define('FILENAME_ALERT_PAGE', 'alert_page');
 define('FILENAME_ALT_NAV', 'alt_nav');
 define('FILENAME_ATTRIBUTES', 'attributes');
 define('FILENAME_ATTRIBUTES_CONTROLLER', 'attributes_controller');

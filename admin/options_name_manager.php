@@ -4,7 +4,7 @@
  * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: options_name_manager.php 15500 2010-02-17 02:06:12Z ajeh $
+ * @version $Id: options_name_manager.php 17357 2010-08-23 20:24:54Z wilt $
  */
 
   require('includes/application_top.php');
@@ -531,7 +531,9 @@ function go_option() {
                 <td colspan="4" class="smallText">
 <?php
     $per_page = MAX_ROW_LISTS_OPTIONS;
-    $options = "select * from " . TABLE_PRODUCTS_OPTIONS . " where language_id = '" . (int)$_SESSION['languages_id'] . "' order by " . $option_order_by;
+    $options = "select * from " . TABLE_PRODUCTS_OPTIONS . " where language_id = :languageId: order by :optionOrderBy:";
+    $options = $db->bindVars($options, ':languageId:', $_SESSION['languages_id'], 'integer'); 
+    $options = $db->bindVars($options, ':optionOrderBy:', $option_order_by, 'string'); 
     if (!isset($_GET['option_page'])) {
       $_GET['option_page'] = 1;
     }

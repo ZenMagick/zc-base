@@ -2,10 +2,10 @@
 /**
  * @package Installer
  * @access private
- * @copyright Copyright 2003-2007 Zen Cart Development Team
+ * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: header_php.php 7415 2007-11-11 06:19:40Z drbyte $
+ * @version $Id: header_php.php 17527 2010-09-08 05:44:26Z drbyte $
  */
 
   if (!isset($_POST['admin_username'])) $_POST['admin_username'] = '';
@@ -14,7 +14,17 @@
   @require_once('../includes/configure.php');
   if (!defined('DB_TYPE') || DB_TYPE=='') {
     die('Database Type Invalid. Did your configure.php file get written correctly?');
-    $zc_install->setError('Database Type Invalid', 27);
+    $zc_install->setError('Database Type Invalid: (' . DB_TYPE . ')', 27);
+  }
+
+  if ($za_dir = @dir(DIR_FS_SQL_CACHE)) {
+    while ($zv_file = $za_dir->read()) {
+      if (preg_match('/^zcInstall.*\.log$/', $zv_file)) {
+        unlink(DIR_FS_SQL_CACHE . '/' . $zv_file);
+      }
+    }
+    $za_dir->close();
+    unset($za_dir);
   }
 
   if (isset($_POST['submit'])) {
@@ -40,4 +50,3 @@
 // this sets the first field to email address on login - setting in /common/tpl_main_page.php
   $zc_first_field= 'onload="document.getElementById(\'admin_username\').focus()"';
 
-?>

@@ -4,7 +4,7 @@
  * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: ezpages.php 15698 2010-03-19 06:58:28Z drbyte $
+ * @version $Id: ezpages.php 17417 2010-08-30 18:25:01Z drbyte $
  */
 
 // Sets the status of a page
@@ -431,7 +431,7 @@
             <td class="main">
 				<?php if ($_SESSION['html_editor_preference_status']=="FCKEDITOR") {
                 $oFCKeditor = new FCKeditor('pages_html_text') ;
-                $oFCKeditor->Value = htmlspecialchars($ezInfo->pages_html_text);
+                $oFCKeditor->Value = $ezInfo->pages_html_text;
                 $oFCKeditor->Width  = '80%' ;
                 $oFCKeditor->Height = '500' ;
 //                $oFCKeditor->Create() ;

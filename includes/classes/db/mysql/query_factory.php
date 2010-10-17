@@ -7,7 +7,7 @@
  * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: query_factory.php 15947 2010-04-15 15:25:42Z wilt $
+ * @version $Id: query_factory.php 17549 2010-09-12 17:35:32Z drbyte $
  */
 if (!defined('IS_ADMIN_FLAG')) {
   die('Illegal Access');
@@ -191,7 +191,16 @@ class queryFactory extends base {
         $this->set_error('0', DB_ERROR_NOT_CONNECTED);
       }
       $zp_db_resource = @mysql_query($zf_sql, $this->link);
-      if (!$zp_db_resource) $this->set_error(@mysql_errno($this->link),@mysql_error($this->link));
+      if (!$zp_db_resource) {
+        if (@mysql_errno($this->link) == 2006) {
+          $this->link = FALSE;
+          $this->connect($this->host, $this->user, $this->password, $this->database, $this->pConnect, $this->real);
+          $zp_db_resource = @mysql_query($zf_sql, $this->link);
+        }
+        if (!$zp_db_resource) {
+          $this->set_error(@mysql_errno($this->link),@mysql_error($this->link));
+        }
+      }
       if(!is_resource($zp_db_resource)){
         $obj = null;
         return true;

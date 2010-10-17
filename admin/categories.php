@@ -4,7 +4,7 @@
  * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: categories.php 16185 2010-05-03 18:08:24Z ajeh $
+ * @version $Id: categories.php 17534 2010-09-08 19:50:34Z wilt $
  */
 
   require('includes/application_top.php');

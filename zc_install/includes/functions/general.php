@@ -6,7 +6,7 @@
  * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: general.php 16886 2010-07-09 16:26:42Z drbyte $
+ * @version $Id: general.php 17432 2010-09-01 05:21:34Z drbyte $
  */
 
   if (!defined('TABLE_UPGRADE_EXCEPTIONS')) define('TABLE_UPGRADE_EXCEPTIONS','upgrade_exceptions');
@@ -898,3 +898,25 @@ function executeSql($sql_file, $database, $table_prefix = '', $isupgrade=false) 
     return ($sid == '') ? '' : '&' . zen_output_string($sid);
   }
 
+////
+  function zen_create_random_value($length, $type = 'mixed') {
+    if ( ($type != 'mixed') && ($type != 'chars') && ($type != 'digits')) return false;
+
+    $rand_value = '';
+    while (strlen($rand_value) < $length) {
+      if ($type == 'digits') {
+        $char = zen_rand(0,9);
+      } else {
+        $char = chr(zen_rand(0,255));
+      }
+      if ($type == 'mixed') {
+        if (preg_match('/^[a-z0-9]$/i', $char)) $rand_value .= $char;
+      } elseif ($type == 'chars') {
+        if (preg_match('/^[a-z]$/i', $char)) $rand_value .= $char;
+      } elseif ($type == 'digits') {
+        if (preg_match('/^[0-9]$/', $char)) $rand_value .= $char;
+      }
+    }
+
+    return $rand_value;
+  }

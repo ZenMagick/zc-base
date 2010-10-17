@@ -17,7 +17,7 @@
 // | to obtain it through the world-wide-web, please send a note to       |
 // | license@zen-cart.com so we can mail you a copy immediately.          |
 // +----------------------------------------------------------------------+
-//  $Id: stats_products_lowstock.php 1969 2005-09-13 06:57:21Z drbyte $
+//  $Id: stats_products_lowstock.php 17534 2010-09-08 19:50:34Z wilt $
 //
   require('includes/application_top.php');
 

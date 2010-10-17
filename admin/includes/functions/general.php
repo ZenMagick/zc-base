@@ -4,7 +4,7 @@
  * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: general.php 17149 2010-08-04 16:49:35Z drbyte $
+ * @version $Id: general.php 17610 2010-09-24 15:16:07Z drbyte $
  */
 
 ////
@@ -1466,6 +1466,9 @@ while (!$chk_sale_categories_all->EOF) {
                   where orders_id = '" . (int)$order_id . "'");
 
     $db->Execute("delete from " . TABLE_ORDERS_PRODUCTS_ATTRIBUTES . "
+                  where orders_id = '" . (int)$order_id . "'");
+
+    $db->Execute("delete from " . TABLE_ORDERS_PRODUCTS_DOWNLOAD . "
                   where orders_id = '" . (int)$order_id . "'");
 
     $db->Execute("delete from " . TABLE_ORDERS_STATUS_HISTORY . "

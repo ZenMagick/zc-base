@@ -17,7 +17,7 @@
 // | to obtain it through the world-wide-web, please send a note to       |
 // | license@zen-cart.com so we can mail you a copy immediately.          |
 // +----------------------------------------------------------------------+
-//  $Id: products_expected.php 3295 2006-03-28 07:27:49Z drbyte $
+//  $Id: products_expected.php 17534 2010-09-08 19:50:34Z wilt $
 //
   require('includes/application_top.php');
 
