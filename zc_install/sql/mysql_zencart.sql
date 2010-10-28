@@ -5,7 +5,7 @@
 # * @copyright Copyright 2003-2010 Zen Cart Development Team
 # * @copyright Portions Copyright 2003 osCommerce
 # * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
-# * @version $Id: mysql_zencart.sql 17356 2010-08-23 19:39:13Z drbyte $
+# * @version $Id: mysql_zencart.sql 17918 2010-10-10 04:45:45Z drbyte $
 #
 
 ############ IMPORTANT INSTRUCTIONS ###############
@@ -127,7 +127,7 @@ CREATE TABLE authorizenet (
   response_code int(1) NOT NULL default '0',
   response_text varchar(255) NOT NULL default '',
   authorization_type varchar(50) NOT NULL default '',
-  transaction_id bigint default NULL,
+  transaction_id bigint(20) default NULL,
   sent longtext NOT NULL,
   received longtext NOT NULL,
   time varchar(50) NOT NULL default '',
@@ -3481,9 +3481,9 @@ INSERT INTO get_terms_to_filter VALUES ('record_company_id', 'TABLE_RECORD_COMPA
 # Dumping data for table project_version
 #
 
-INSERT INTO project_version (project_version_id, project_version_key, project_version_major, project_version_minor, project_version_patch1, project_version_patch1_source, project_version_patch2, project_version_patch2_source, project_version_comment, project_version_date_applied) VALUES (1, 'Zen-Cart Main', '1', '3.9g', '', '', '', '', 'Fresh Installation', now());
-INSERT INTO project_version (project_version_id, project_version_key, project_version_major, project_version_minor, project_version_patch1, project_version_patch1_source, project_version_patch2, project_version_patch2_source, project_version_comment, project_version_date_applied) VALUES (2, 'Zen-Cart Database', '1', '3.9g', '', '', '', '', 'Fresh Installation', now());
-INSERT INTO project_version_history (project_version_id, project_version_key, project_version_major, project_version_minor, project_version_patch, project_version_comment, project_version_date_applied) VALUES (1, 'Zen-Cart Main', '1', '3.9g', '', 'Fresh Installation', now());
-INSERT INTO project_version_history (project_version_id, project_version_key, project_version_major, project_version_minor, project_version_patch, project_version_comment, project_version_date_applied) VALUES (2, 'Zen-Cart Database', '1', '3.9g', '', 'Fresh Installation', now());
+INSERT INTO project_version (project_version_id, project_version_key, project_version_major, project_version_minor, project_version_patch1, project_version_patch1_source, project_version_patch2, project_version_patch2_source, project_version_comment, project_version_date_applied) VALUES (1, 'Zen-Cart Main', '1', '3.9h', '', '', '', '', 'Fresh Installation', now());
+INSERT INTO project_version (project_version_id, project_version_key, project_version_major, project_version_minor, project_version_patch1, project_version_patch1_source, project_version_patch2, project_version_patch2_source, project_version_comment, project_version_date_applied) VALUES (2, 'Zen-Cart Database', '1', '3.9h', '', '', '', '', 'Fresh Installation', now());
+INSERT INTO project_version_history (project_version_id, project_version_key, project_version_major, project_version_minor, project_version_patch, project_version_comment, project_version_date_applied) VALUES (1, 'Zen-Cart Main', '1', '3.9h', '', 'Fresh Installation', now());
+INSERT INTO project_version_history (project_version_id, project_version_key, project_version_major, project_version_minor, project_version_patch, project_version_comment, project_version_date_applied) VALUES (2, 'Zen-Cart Database', '1', '3.9h', '', 'Fresh Installation', now());
 
 ##### End of SQL setup for Zen Cart.

@@ -4,7 +4,7 @@
  * @copyright Copyright 2003-2010 Zen Cart Development Team
  * @copyright Portions Copyright 2003 osCommerce
  * @license http://www.zen-cart.com/license/2_0.txt GNU Public License V2.0
- * @version $Id: options_values_manager.php 15500 2010-02-17 02:06:12Z ajeh $
+ * @version $Id: options_values_manager.php 17903 2010-10-09 21:20:37Z wilt $
  */
 
   require('includes/application_top.php');
@@ -719,6 +719,7 @@ function go_option() {
 // edit option values
       if (($action == 'update_option_value') && ($_GET['value_id'] == $values_values->fields['products_options_values_id'])) {
         echo '<form name="values" action="' . zen_href_link(FILENAME_OPTIONS_VALUES_MANAGER, 'action=update_value' . (isset($_GET['option_page']) ? '&option_page=' . $_GET['option_page'] . '&' : '') . (isset($_GET['value_page']) ? '&value_page=' . $_GET['value_page'] . '&' : '') . (isset($_GET['attribute_page']) ? '&attribute_page=' . $_GET['attribute_page'] : '') ) . '" method="post">';
+        echo zen_draw_hidden_field('securityToken', $_SESSION['securityToken']);
         $inputs = '';
         for ($i = 0, $n = sizeof($languages); $i < $n; $i ++) {
           $value_name = $db->Execute("select products_options_values_name
@@ -794,7 +795,7 @@ function go_option() {
 ?>
               <tr class="<?php echo (floor($rows/2) == ($rows/2) ? 'attributes-even' : 'attributes-odd'); ?>">
 <?php
-      echo '<form name="values" action="' . zen_href_link(FILENAME_OPTIONS_VALUES_MANAGER, 'action=add_product_option_values' . (isset($_GET['option_page']) ? '&option_page=' . $_GET['option_page'] . '&' : '') . (isset($_GET['value_page']) ? '&value_page=' . $_GET['value_page'] . '&' : '') . (isset($_GET['attribute_page']) ? '&attribute_page=' . $_GET['attribute_page'] : '') ) . '" method="post">';
+      echo '<form name="values" action="' . zen_href_link(FILENAME_OPTIONS_VALUES_MANAGER, 'action=add_product_option_values' . (isset($_GET['option_page']) ? '&option_page=' . $_GET['option_page'] . '&' : '') . (isset($_GET['value_page']) ? '&value_page=' . $_GET['value_page'] . '&' : '') . (isset($_GET['attribute_page']) ? '&attribute_page=' . $_GET['attribute_page'] : '') ) . '" method="post">';echo zen_draw_hidden_field('securityToken', $_SESSION['securityToken']);
 ?>
                 <td align="center" class="smallText">&nbsp;<?php echo $next_id; ?>&nbsp;</td>
                 <td align="center" class="smallText">&nbsp;<select name="option_id">
@@ -918,7 +919,7 @@ example: Copy Color Red to products with Size Small
             <tr class="dataTableHeadingRow">
               <td colspan="5"><table border="1" cellspacing="0" cellpadding="2" width="100%">
                 <tr class="dataTableHeadingRow">
-                  <form name="quick_jump" method="post" action="<?php echo zen_href_link(FILENAME_OPTIONS_VALUES_MANAGER, 'action=copy_options_values_one_to_another', 'NONSSL'); ?>">
+                  <form name="quick_jump" method="post" action="<?php echo zen_href_link(FILENAME_OPTIONS_VALUES_MANAGER, 'action=copy_options_values_one_to_another', 'NONSSL'); ?>"><?php echo zen_draw_hidden_field('securityToken', $_SESSION['securityToken']); ?>
                   <td class="dataTableHeadingContent">
                   <?php echo
                   TEXT_SELECT_OPTION_FROM . '<br />' . $option_from_dropdown . '&nbsp;<br />' .
@@ -957,7 +958,7 @@ example: Delete Color Red
             <tr class="dataTableHeadingRow">
               <td colspan="5"><table border="1" cellspacing="0" cellpadding="2" width="100%">
                 <tr class="dataTableHeadingRow">
-                  <form name="quick_jump" method="post" action="<?php echo zen_href_link(FILENAME_OPTIONS_VALUES_MANAGER, 'action=delete_options_values_of_option_name', 'NONSSL'); ?>">
+                  <form name="quick_jump" method="post" action="<?php echo zen_href_link(FILENAME_OPTIONS_VALUES_MANAGER, 'action=delete_options_values_of_option_name', 'NONSSL'); ?>"><?php echo zen_draw_hidden_field('securityToken', $_SESSION['securityToken']); ?>
                   <td class="dataTableHeadingContent">
                   <?php echo
                   TEXT_SELECT_DELETE_OPTION_FROM . '<br />' . $option_from_dropdown . '&nbsp;<br />' .
@@ -991,7 +992,7 @@ example: Copy Color Red to products with Size Small
             <tr class="dataTableHeadingRow">
               <td colspan="5"><table border="1" cellspacing="0" cellpadding="2" width="100%">
                 <tr class="dataTableHeadingRow">
-                  <form name="quick_jump" method="post" action="<?php echo zen_href_link(FILENAME_OPTIONS_VALUES_MANAGER, 'action=copy_options_values_one_to_another_options_id', 'NONSSL'); ?>">
+                  <form name="quick_jump" method="post" action="<?php echo zen_href_link(FILENAME_OPTIONS_VALUES_MANAGER, 'action=copy_options_values_one_to_another_options_id', 'NONSSL'); ?>"><?php echo zen_draw_hidden_field('securityToken', $_SESSION['securityToken']); ?>
                   <td class="dataTableHeadingContent" valign="top">
                   <?php echo
                   TEXT_SELECT_OPTION_FROM_ADD . '<br />' . $option_from_dropdown . '&nbsp;<br />' .
