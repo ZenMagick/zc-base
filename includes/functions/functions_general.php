@@ -660,7 +660,7 @@ if (!defined('IS_ADMIN_FLAG')) {
       } else {
         return false;
       }
-    } elseif( is_a( $value, 'queryFactoryResult' ) ) {
+    } elseif( is_object($value) && is_a( $value, 'queryFactoryResult' ) ) {
       if (sizeof($value->result) > 0) {
         return true;
       } else {
